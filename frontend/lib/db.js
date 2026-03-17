@@ -8,6 +8,7 @@ const pool = new Pool({
 });
 
 console.log('DATABASE_URL configurada:', !!process.env.DATABASE_URL);
+console.log('DATABASE_URL value:', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 50) + '...' : 'undefined');
 
 pool.on('error', (err, client) => {
   console.error('Error inesperado en el cliente de base de datos', err);
@@ -25,8 +26,14 @@ const query = async (text, params) => {
 };
 
 // Función para inicializar la base de datos
-const initDatabase = async () => {
-  const createTableSQL = `
+const initDatabase = async () => {  try {
+    const client = await pool.connect();
+    console.log('Conexión a DB exitosa');
+    client.release();
+  } catch (err) {
+    console.error('Error conectando a DB:', err.message);
+    throw err;
+  }  const createTableSQL = `
     CREATE TABLE IF NOT EXISTS products (
       id UUID PRIMARY KEY,
       title TEXT NOT NULL,
