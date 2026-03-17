@@ -13,8 +13,8 @@ const SEARCH_QUERIES = [
   'televisores'
 ];
 
-const MIN_DISCOUNT = 0.30;
-const MELI_API_URL = process.env.MELI_API_URL || 'https://api.mercadolibre.com/sites/MLA/search';
+const MIN_DISCOUNT = 0.10; // Temporalmente reducido para probar
+const MELI_API_URL = process.env.MELI_API_URL || 'https://api.mercadolibre.com/sites/MLC/search';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
