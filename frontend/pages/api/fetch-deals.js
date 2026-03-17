@@ -33,7 +33,13 @@ export default async function handler(req, res) {
           `${MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
           {
             timeout: 15000,
-            headers: { 'User-Agent': 'DealRadar/1.0' }
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'es-CL,es;q=0.9,en;q=0.8',
+              'Referer': 'https://www.mercadolibre.cl/',
+              'DNT': '1'
+            }
           }
         );
 
@@ -81,6 +87,9 @@ export default async function handler(req, res) {
       } catch (err) {
         console.error(`   ❌ Error en API para ${searchQuery}:`, err.message);
       }
+
+      // Delay de 2 segundos entre requests para evitar rate limits
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     console.log(`✨ Scraper finalizado. Guardadas ${totalSaved} nuevas ofertas.`);
