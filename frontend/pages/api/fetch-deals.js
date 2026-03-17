@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         console.log(`📦 Buscando ${searchQuery}...`);
 
         const response = await axios.get(
-          `${MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
+          `${MELI_API_URL}?q=${encodeURIComponent(searchQuery)}&app_id=${process.env.MELI_APP_ID}`,
           {
             timeout: 15000,
             headers: {
