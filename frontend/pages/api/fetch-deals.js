@@ -37,8 +37,7 @@ export default async function handler(req, res) {
           }
         );
 
-        const products = response.data.results || [];
-        console.log(`   -> Encontrados ${products.length} productos`);
+        console.log(`   -> Respuesta de API: ${response.status}, productos encontrados: ${response.data.results ? response.data.results.length : 0}`);
 
         for (const product of products) {
           try {
@@ -48,7 +47,10 @@ export default async function handler(req, res) {
             if (!originalPrice || originalPrice <= currentPrice) continue;
 
             const discount = (originalPrice - currentPrice) / originalPrice;
-            if (discount < MIN_DISCOUNT) continue;
+            if (discount < MIN_DISCOUNT) {
+              console.log(`   -> Producto descartado por descuento bajo: ${discount} < ${MIN_DISCOUNT}`);
+              continue;
+            }
 
             // Evitar duplicados
             const exists = await query('SELECT id FROM products WHERE url = $1', [product.permalink]);
@@ -71,6 +73,7 @@ export default async function handler(req, res) {
               ]
             );
             totalSaved++;
+            console.log(`   -> Producto guardado: ${product.title.substring(0, 50)}... con descuento ${discount}`);
           } catch (prodErr) {
             console.error('   ❌ Error procesando producto:', prodErr.message);
           }
