@@ -7,6 +7,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+console.log('DATABASE_URL configurada:', !!process.env.DATABASE_URL);
+
 pool.on('error', (err, client) => {
   console.error('Error inesperado en el cliente de base de datos', err);
 });
