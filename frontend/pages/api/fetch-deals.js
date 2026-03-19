@@ -23,77 +23,65 @@ export default async function handler(req, res) {
 
   try {
     console.log('🚀 Ejecutando fetchDeals desde API route');
-    let totalSaved = 0;
 
-    for (const searchQuery of SEARCH_QUERIES) {
-      try {
-        console.log(`📦 Buscando ${searchQuery}...`);
-
-        const response = await axios.get(
-          `${MELI_API_URL}?q=${encodeURIComponent(searchQuery)}&access_token=${process.env.MELI_ACCESS_TOKEN}`,
-          {
-            timeout: 15000,
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-              'Accept': 'application/json, text/plain, */*',
-              'Accept-Language': 'es-CL,es;q=0.9,en;q=0.8',
-              'Referer': 'https://www.mercadolibre.cl/',
-              'DNT': '1'
-            }
-          }
-        );
-
-        console.log(`   -> Respuesta de API: ${response.status}, productos encontrados: ${response.data.results ? response.data.results.length : 0}`);
-
-        for (const product of products) {
-          try {
-            const originalPrice = product.original_price || product.price;
-            const currentPrice = product.price;
-
-            if (!originalPrice || originalPrice <= currentPrice) continue;
-
-            const discount = (originalPrice - currentPrice) / originalPrice;
-            if (discount < MIN_DISCOUNT) {
-              console.log(`   -> Producto descartado por descuento bajo: ${discount} < ${MIN_DISCOUNT}`);
-              continue;
-            }
-
-            // Evitar duplicados
-            const exists = await query('SELECT id FROM products WHERE url = $1', [product.permalink]);
-            if (exists.rows.length > 0) continue;
-
-            await query(
-              `INSERT INTO products (id, title, price, original_price, discount, image, url, store, category, search_query)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-              [
-                uuidv4(),
-                product.title,
-                currentPrice,
-                originalPrice,
-                discount,
-                product.thumbnail,
-                product.permalink,
-                'MercadoLibre',
-                searchQuery,
-                searchQuery
-              ]
-            );
-            totalSaved++;
-            console.log(`   -> Producto guardado: ${product.title.substring(0, 50)}... con descuento ${discount}`);
-          } catch (prodErr) {
-            console.error('   ❌ Error procesando producto:', prodErr.message);
-          }
-        }
-      } catch (err) {
-        console.error(`   ❌ Error en API para ${searchQuery}:`, err.message);
+    // Mock data para probar la app
+    const mockProducts = [
+      {
+        title: 'Notebook Lenovo IdeaPad 3',
+        price: 450000,
+        original_price: 600000,
+        discount: 0.25,
+        image: 'https://http2.mlstatic.com/D_NQ_NP_123456-MLA12345678_012023-I.jpg',
+        url: 'https://articulo.mercadolibre.cl/MLC-123456789',
+        store: 'MercadoLibre',
+        category: 'tecnologia',
+        search_query: 'tecnologia'
+      },
+      {
+        title: 'Smart TV Samsung 43"',
+        price: 250000,
+        original_price: 350000,
+        discount: 0.2857,
+        image: 'https://http2.mlstatic.com/D_NQ_NP_987654-MLA98765432_012023-I.jpg',
+        url: 'https://articulo.mercadolibre.cl/MLC-987654321',
+        store: 'MercadoLibre',
+        category: 'tecnologia',
+        search_query: 'tecnologia'
       }
+    ];
 
-      // Delay de 2 segundos entre requests para evitar rate limits
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    let totalSaved = 0;
+    for (const product of mockProducts) {
+      try {
+        // Evitar duplicados
+        const exists = await query('SELECT id FROM products WHERE url = $1', [product.url]);
+        if (exists.rows.length > 0) continue;
+
+        await query(
+          `INSERT INTO products (id, title, price, original_price, discount, image, url, store, category, search_query)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          [
+            uuidv4(),
+            product.title,
+            product.price,
+            product.original_price,
+            product.discount,
+            product.image,
+            product.url,
+            product.store,
+            product.category,
+            product.search_query
+          ]
+        );
+        totalSaved++;
+        console.log(`   -> Producto guardado: ${product.title}`);
+      } catch (prodErr) {
+        console.error('   ❌ Error procesando producto:', prodErr.message);
+      }
     }
 
-    console.log(`✨ Scraper finalizado. Guardadas ${totalSaved} nuevas ofertas.`);
-    res.status(200).json({ message: `Guardadas ${totalSaved} nuevas ofertas.` });
+    console.log(`✨ Scraper finalizado. Guardadas ${totalSaved} ofertas mock.`);
+    res.status(200).json({ message: `Guardadas ${totalSaved} ofertas mock.` });
   } catch (error) {
     console.error('Error al ejecutar scraper:', error);
     res.status(500).json({ error: 'Error al ejecutar scraper' });
