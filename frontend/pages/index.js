@@ -77,7 +77,7 @@ export default function Home() {
               {ranking.map((product, index) => (
                 <a 
                   key={product.id}
-                  href={`/go/${product.id}`}
+                  href={`/api/go/${product.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ranking-card"

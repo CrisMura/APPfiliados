@@ -35,7 +35,7 @@ const DealCard = ({ product, showBestBadge = false }) => {
           <span className="original-price">{formattedOriginalPrice}</span>
           <span className="current-price">{formattedPrice}</span>
         </div>
-        <Link href={`/go/${product.id}`} className="deal-button" target="_blank">
+        <Link href={`/api/go/${product.id}`} className="deal-button" target="_blank" rel="noopener noreferrer">
           Ver oferta
         </Link>
       </div>
