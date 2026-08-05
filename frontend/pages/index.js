@@ -41,12 +41,12 @@ export default function Home() {
   }, []);
 
   return (
-    <Layout title="DealRadar - Las mejores ofertas de MercadoLibre">
+    <Layout title="DealRadar - Las mejores ofertas">
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
           <h1>📡 DealRadar</h1>
-          <p>Descubre los mejores descuentos en MercadoLibre. Ofertas actualizadas automáticamente cada hora.</p>
+          <p>Descubre las mejores ofertas cargadas manualmente y visualízalas desde el panel.</p>
           
           <div className="stats-bar">
             <div className="stat-item">
@@ -128,7 +128,7 @@ export default function Home() {
           <div className="empty-state">
             <div className="empty-icon">📦</div>
             <h3 className="empty-title">No hay ofertas disponibles</h3>
-            <p>Asegurate de que el backend este corriendo y el scraper haya ejecutado.</p>
+            <p>Asegurate de que el backend esté corriendo y que los datos hayan sido cargados manualmente.</p>
           </div>
         )}
 

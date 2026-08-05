@@ -1,13 +1,11 @@
 # 📡 DealRadar
 
-Aplicación web MVP que descubre automáticamente productos con grandes descuentos en MercadoLibre y los publica en un sitio web optimizado para SEO.
+Aplicación web MVP para gestionar ofertas y visualizarlas desde un backend Express con frontend Next.js.
 
 ## 🚀 Características
 
-- **Scraper automático**: Consulta la API de MercadoLibre cada hora
-- **Detección de ofertas**: Filtra productos con descuento mayor al 30%
-- **Base de datos PostgreSQL**: Almacena todas las ofertas detectadas
 - **API REST**: Endpoints para consultar ofertas, ranking y estadísticas
+- **Base de datos PostgreSQL**: Almacena las ofertas cargadas manualmente
 - **Frontend Next.js**: Interfaz moderna y responsive optimizada para SEO
 - **Tracking de clics**: Registra los clics en cada oferta
 - **Ranking dinámico**: Las mejores ofertas del día basadas en descuento + clics
@@ -17,7 +15,6 @@ Aplicación web MVP que descubre automáticamente productos con grandes descuent
 - **Frontend**: Next.js 14 (React)
 - **Backend**: Node.js + Express.js
 - **Base de datos**: PostgreSQL
-- **Automatización**: node-cron
 
 ## 📁 Estructura del Proyecto
 
@@ -37,8 +34,6 @@ dealradar/
 │   └── package.json
 ├── database/
 │   └── migrations/         # Migraciones SQL
-├── scripts/
-│   └── fetchDeals.js       # Script scraper
 ├── .env                    # Variables de entorno
 └── README.md
 ```
@@ -84,9 +79,6 @@ PORT=5000
 # URL del Frontend
 FRONTEND_URL=http://localhost:3000
 
-# URL de la API de MercadoLibre
-MELI_API_URL=https://api.mercadolibre.com/sites/MLC/search
-
 # Descuento mínimo (30%)
 MIN_DISCOUNT=0.30
 ```
@@ -108,7 +100,7 @@ npm install
 
 ## 🚦 Ejecución
 
-### Opción 1: Ejecutar todo manualmente
+### Opción 1: Ejecutar el backend y frontend
 
 **Terminal 1 - Backend:**
 ```bash
@@ -122,14 +114,6 @@ cd frontend
 npm run dev
 ```
 
-### Opción 2: Ejecutar solo el scraper manualmente
-
-```bash
-npm run scrape
-```
-
-Esto ejecutará el scraper una vez y guardará las ofertas en la base de datos.
-
 ## 📡 API Endpoints
 
 | Método | Endpoint | Descripción |
@@ -139,7 +123,6 @@ Esto ejecutará el scraper una vez y guardará las ofertas en la base de datos.
 | GET | `/api/deals/ranking` | Obtiene las mejores ofertas |
 | GET | `/api/deals/:id` | Obtiene una oferta específica |
 | GET | `/api/stats` | Estadísticas del sistema |
-| POST | `/api/fetch-deals` | Ejecuta el scraper manualmente |
 | GET | `/go/:id` | Redirecciona y cuenta el clic |
 
 ## 🌐 Páginas del Frontend
@@ -153,51 +136,6 @@ Esto ejecutará el scraper una vez y guardará las ofertas en la base de datos.
 | `/ofertas/herramientas` | Ofertas de herramientas |
 | `/ofertas/deportes` | Ofertas de deportes |
 | `/ofertas/electrodomesticos` | Ofertas de electrodomésticos |
-
-## 🔄 Automatización
-
-El scraper se ejecuta automáticamente cada hora gracias a node-cron. Puedes modificar esta configuración en `backend/server.js`:
-
-```javascript
-// Ejecutar cada hora
-cron.schedule('0 * * * *', () => {
-  fetchDeals();
-});
-
-// Otras opciones:
-// Cada 15 minutos: '*/15 * * * *'
-// Cada 6 horas: '0 */6 * * *'
-// Diario a medianoche: '0 0 * * *'
-```
-
-## 📊 Scoring de Ofertas
-
-Las mejores ofertas del día se calculan usando:
-
-```
-score = (descuento * 100) + clics
-```
-
-Esto combina productos con gran descuento y alta popularidad.
-
-## 🐛 Solución de Problemas
-
-### Error de conexión a PostgreSQL
-
-1. Verifica que PostgreSQL esté corriendo
-2. Confirma que las credenciales en `.env` sean correctas
-3. Crea la base de datos si no existe
-
-### Error al ejecutar el scraper
-
-1. Verifica tu conexión a internet
-2. Confirma que la API de MercadoLibre esté accesible
-3. Revisa los logs del servidor
-
-### Frontend no conecta al backend
-
-1. Verifica que el backend esté corriendo en el puerto 5000
-2. Confirma la variable `NEXT_PUBLIC_API_URL` en el frontend
 
 ## 📄 Licencia
 

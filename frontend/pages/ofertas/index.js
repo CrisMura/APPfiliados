@@ -28,13 +28,13 @@ export default function Ofertas() {
   }, []);
 
   const pageTitle = 'Todas las ofertas - DealRadar';
-  const pageDescription = 'Ver todas las ofertas con los mejores descuentos de MercadoLibre. Tecnología, hogar, herramientas y más.';
+  const pageDescription = 'Ver todas las ofertas cargadas manualmente. Tecnología, hogar, herramientas y más.';
 
   return (
     <Layout title={pageTitle}>
       <section className="category-header">
         <h1>🔥 Todas las ofertas</h1>
-        <p>Los mejores descuentos de MercadoLibre en un solo lugar</p>
+        <p>Las mejores ofertas cargadas manualmente en un solo lugar</p>
       </section>
 
       <section className="container">

@@ -1,17 +1,17 @@
 import Head from 'next/head';
 import Link from 'next/link';
 
-const Layout = ({ children, title = 'DealRadar - Las mejores ofertas de MercadoLibre' }) => {
+const Layout = ({ children, title = 'DealRadar - Las mejores ofertas' }) => {
   return (
     <>
       <Head>
         <title>{title}</title>
-        <meta name="description" content="Descubre los mejores descuentos en tecnología, hogar, herramientas y más en MercadoLibre. Ofertas actualizadas cada hora." />
+        <meta name="description" content="Descubre los mejores descuentos en tecnología, hogar, herramientas y más. Ofertas cargadas manualmente para tu revisión." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#ff6b35" />
         <link rel="icon" href="/favicon.ico" />
         <meta property="og:title" content={title} />
-        <meta property="og:description" content="Las mejores ofertas de MercadoLibre" />
+        <meta property="og:description" content="Las mejores ofertas disponibles cargadas manualmente" />
         <meta property="og:type" content="website" />
       </Head>
 
@@ -44,7 +44,7 @@ const Layout = ({ children, title = 'DealRadar - Las mejores ofertas de MercadoL
             <Link href="/ofertas/herramientas" className="footer-link">Herramientas</Link>
           </div>
           <p className="footer-copyright">
-            © {new Date().getFullYear()} DealRadar. Las mejores ofertas de MercadoLibre.
+            © {new Date().getFullYear()} DealRadar. Las mejores ofertas cargadas manualmente.
           </p>
         </div>
       </footer>

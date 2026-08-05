@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS products (
     discount NUMERIC(5, 4),
     image TEXT,
     url TEXT UNIQUE NOT NULL,
-    store TEXT DEFAULT 'MercadoLibre',
+    store TEXT DEFAULT 'DealRadar',
     clicks INTEGER DEFAULT 0,
     category TEXT,
     search_query TEXT,
@@ -30,7 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_products_score ON products((discount * 100 + clic
 
 -- Insertar datos de ejemplo (opcional)
 -- INSERT INTO products (title, price, original_price, discount, image, url, store, category)
--- VALUES ('Producto de ejemplo', 100.00, 150.00, 0.33, 'https://http2.mlstatic.com/D_980749-MLA123456789_012014-I.jpg', 'https://articulo.mercadolibre.com.ar/MLA-123456789', 'MercadoLibre', 'tecnologia');
+-- VALUES ('Producto de ejemplo', 100.00, 150.00, 0.33, 'https://example.com/image.jpg', 'https://example.com/product', 'DealRadar', 'tecnologia');
 
 -- Verificar tabla
 -- SELECT * FROM products LIMIT 10;

@@ -1,20 +1,17 @@
 {
   "name": "dealradar",
   "version": "1.0.0",
-  "description": "Aplicación web MVP que descubre automáticamente productos con grandes descuentos en MercadoLibre",
+  "description": "Aplicación web MVP para gestionar ofertas cargadas manualmente",
   "private": true,
   "scripts": {
     "dev": "echo 'Ejecutando frontend y backend...'",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start:backend": "cd backend && npm start",
-    "start:frontend": "cd frontend && npm run dev",
-    "scrape": "node scripts/fetchDeals.js"
+    "start:frontend": "cd frontend && npm run dev"
   },
   "keywords": [
     "deals",
     "discount",
-    "mercadolibre",
-    "scraper",
     "nextjs",
     "express"
   ],

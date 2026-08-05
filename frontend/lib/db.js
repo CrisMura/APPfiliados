@@ -42,7 +42,7 @@ const initDatabase = async () => {  try {
       discount NUMERIC(5, 4),
       image TEXT,
       url TEXT UNIQUE NOT NULL,
-      store TEXT DEFAULT 'MercadoLibre',
+      store TEXT DEFAULT 'DealRadar',
       category TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

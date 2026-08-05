@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { pool, query } = require('../db/config');
-const axios = require('axios');
-const { v4: uuidv4 } = require('uuid');
+const { query } = require('../db/config');
 require('dotenv').config();
 
 // GET /api/deals - Devuelve todas las ofertas ordenadas por mayor descuento
@@ -72,131 +70,17 @@ router.get('/go/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Obtener la URL del producto
     const result = await query('SELECT url FROM products WHERE id = $1', [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
     
-    // Incrementar contador de clicks
     await query('UPDATE products SET clicks = clicks + 1 WHERE id = $1', [id]);
-    
-    // Redireccionar a la URL del producto
     res.redirect(result.rows[0].url);
   } catch (error) {
     console.error('Error al redireccionar:', error);
     res.status(500).json({ error: 'Error al redireccionar' });
-  }
-});
-
-// POST /api/fetch-deals - Ejecuta manualmente el scraper
-router.post('/fetch-deals', async (req, res) => {
-  try {
-    const searchQueries = [
-      'tecnologia',
-      'hogar',
-      'herramientas',
-      'deportes',
-      'electrodomesticos'
-    ];
-    
-    const minDiscount = parseFloat(process.env.MIN_DISCOUNT) || 0.30;
-    let totalSaved = 0;
-    
-    for (const searchQuery of searchQueries) {
-      const response = await axios.get(
-        `${process.env.MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
-        { timeout: 10000 }
-      );
-      
-      const products = response.data.results;
-      
-      for (const product of products) {
-        const originalPrice = product.original_price || product.price;
-        const currentPrice = product.price;
-        
-        if (!originalPrice || originalPrice <= currentPrice) continue;
-        
-        const discount = (originalPrice - currentPrice) / originalPrice;
-        
-        if (discount >= minDiscount) {
-          // Verificar si ya existe
-          const existingProduct = await query(
-            'SELECT id FROM products WHERE url = $1',
-            [product.permalink]
-          );
-          
-          if (existingProduct.rows.length === 0) {
-            await query(
-              `INSERT INTO products (id, title, price, original_price, discount, image, url, store, category, search_query)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-              [
-                uuidv4(),
-                product.title,
-                currentPrice,
-                originalPrice,
-                discount,
-                product.thumbnail,
-                product.permalink,
-                'MercadoLibre',
-                searchQuery,
-                searchQuery
-              ]
-            );
-            totalSaved++;
-          }
-        }
-      }
-    }
-    
-    res.json({ 
-      success: true, 
-      message: `Se guardaron ${totalSaved} nuevas ofertas`,
-      totalSaved 
-    });
-  } catch (error) {
-    console.error('Error al ejecutar scraper:', error);
-    res.status(500).json({ error: 'Error al ejecutar scraper' });
-  }
-});
-
-// GET /api/meli/check - Verifica la respuesta de MercadoLibre
-router.get('/meli/check', async (req, res) => {
-  try {
-    const searchQuery = req.query.q || 'tecnologia';
-    const response = await axios.get(
-      `${process.env.MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
-      {
-        timeout: 10000,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'DealRadar/1.0'
-        }
-      }
-    );
-
-    res.json({
-      success: true,
-      url: `${process.env.MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
-      status: response.status,
-      resultsCount: Array.isArray(response.data.results) ? response.data.results.length : 0,
-      sampleProduct: response.data.results && response.data.results.length > 0 ? response.data.results[0] : null
-    });
-  } catch (error) {
-    const payload = {
-      success: false,
-      message: 'Error al consultar MercadoLibre',
-      error: error.message
-    };
-
-    if (error.response) {
-      payload.status = error.response.status;
-      payload.responseData = error.response.data;
-    }
-
-    console.error('Error en /api/meli/check:', payload);
-    res.status(error.response?.status || 500).json(payload);
   }
 });
 
