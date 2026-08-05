@@ -12,8 +12,8 @@ router.get('/deals', async (req, res) => {
     const params = [];
     
     if (category) {
-      sql += ' WHERE category = $1';
-      params.push(category);
+      sql += ' WHERE LOWER(category) LIKE $1';
+      params.push(`%${category.toLowerCase()}%`);
     }
     
     sql += ' ORDER BY discount DESC LIMIT $' + (params.length + 1);
