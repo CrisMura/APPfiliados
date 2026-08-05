@@ -161,6 +161,45 @@ router.post('/fetch-deals', async (req, res) => {
   }
 });
 
+// GET /api/meli/check - Verifica la respuesta de MercadoLibre
+router.get('/meli/check', async (req, res) => {
+  try {
+    const searchQuery = req.query.q || 'tecnologia';
+    const response = await axios.get(
+      `${process.env.MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
+      {
+        timeout: 10000,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'DealRadar/1.0'
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      url: `${process.env.MELI_API_URL}?q=${encodeURIComponent(searchQuery)}`,
+      status: response.status,
+      resultsCount: Array.isArray(response.data.results) ? response.data.results.length : 0,
+      sampleProduct: response.data.results && response.data.results.length > 0 ? response.data.results[0] : null
+    });
+  } catch (error) {
+    const payload = {
+      success: false,
+      message: 'Error al consultar MercadoLibre',
+      error: error.message
+    };
+
+    if (error.response) {
+      payload.status = error.response.status;
+      payload.responseData = error.response.data;
+    }
+
+    console.error('Error en /api/meli/check:', payload);
+    res.status(error.response?.status || 500).json(payload);
+  }
+});
+
 // GET /api/stats - Estadísticas del sistema
 router.get('/stats', async (req, res) => {
   try {
