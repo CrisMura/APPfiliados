@@ -8,16 +8,16 @@ export default async function handler(req, res) {
   try {
     const { category, limit = 50 } = req.query;
 
-    let sql = 'SELECT * FROM products';
+    let sql = "SELECT * FROM products WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''";
     const params = [];
 
     if (category) {
-      sql += ' WHERE LOWER(category) LIKE $1';
+      sql += ' AND LOWER(category) LIKE $1';
       params.push(`%${category.toLowerCase()}%`);
     }
 
     sql += ' ORDER BY discount DESC LIMIT $' + (params.length + 1);
-    params.push(parseInt(limit));
+    params.push(parseInt(limit, 10));
 
     const result = await query(sql, params);
     res.status(200).json(result.rows);

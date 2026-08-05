@@ -6,6 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export default function Admin() {
   const [products, setProducts] = useState([]);
+  const [drafts, setDrafts] = useState({});
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -46,14 +47,16 @@ export default function Admin() {
     await fetchPendingProducts();
   };
 
-  const handleAffiliateChange = (index, value) => {
-    const updated = [...products];
-    updated[index] = { ...updated[index], url_affiliate: value };
-    setProducts(updated);
+  const handleAffiliateChange = (id, value) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   };
 
   const handleSave = async (product) => {
-    if (!product.url_affiliate || product.url_affiliate.trim() === '') {
+    const affiliateUrl = drafts[product.id] !== undefined ? drafts[product.id] : product.url_affiliate;
+    if (!affiliateUrl || affiliateUrl.trim() === '') {
       setMessage('La URL de afiliado no puede quedar vacía.');
       return;
     }
@@ -64,11 +67,16 @@ export default function Admin() {
 
       await axios.put(
         `${API_URL}/admin/products/${product.id}`,
-        { url_affiliate: product.url_affiliate.trim() },
+        { url_affiliate: affiliateUrl.trim() },
         { headers: authHeader ? { Authorization: authHeader } : {} }
       );
 
       setProducts((prev) => prev.filter((item) => item.id !== product.id));
+      setDrafts((prev) => {
+        const next = { ...prev };
+        delete next[product.id];
+        return next;
+      });
       setMessage('URL de afiliado guardada correctamente. El producto ya está listo para publicación.');
     } catch (err) {
       console.error('Error saving affiliate URL:', err);
@@ -151,8 +159,8 @@ export default function Admin() {
                         <label>URL de afiliado</label>
                         <input
                           type="text"
-                          value={product.url_affiliate || ''}
-                          onChange={(e) => handleAffiliateChange(index, e.target.value)}
+                          value={drafts[product.id] !== undefined ? drafts[product.id] : product.url_affiliate || ''}
+                          onChange={(e) => handleAffiliateChange(product.id, e.target.value)}
                           placeholder="https://www.mercadolibre.cl/..."
                         />
                       </div>
