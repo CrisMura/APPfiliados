@@ -12,11 +12,12 @@ export default async function handler(req, res) {
       SELECT *,
         (discount * 100 + clicks) as score
       FROM products
+      WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''
       ORDER BY score DESC
       LIMIT $1
     `;
 
-    const result = await query(sql, [parseInt(limit)]);
+    const result = await query(sql, [parseInt(limit, 10)]);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error('Error al obtener ranking:', error);
