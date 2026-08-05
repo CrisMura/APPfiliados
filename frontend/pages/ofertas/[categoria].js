@@ -3,7 +3,7 @@ import axios from 'axios';
 import Layout from '../../components/Layout';
 import DealCard from '../../components/DealCard';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Mapeo de categorías para SEO
 const categoryMeta = {
