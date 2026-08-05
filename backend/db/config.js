@@ -40,6 +40,7 @@ const initDatabase = async () => {
       discount NUMERIC(5, 4),
       image TEXT,
       url TEXT UNIQUE NOT NULL,
+      url_affiliate TEXT,
       store TEXT DEFAULT 'DealRadar',
       clicks INTEGER DEFAULT 0,
       category TEXT,
@@ -56,6 +57,7 @@ const initDatabase = async () => {
 
   try {
     await pool.query(createTableSQL);
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS url_affiliate TEXT');
     console.log('Base de datos inicializada correctamente');
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);

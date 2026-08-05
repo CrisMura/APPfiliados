@@ -454,6 +454,132 @@ body {
   color: var(--dark-color);
 }
 
+/* Admin Page */
+.admin-header {
+  background: linear-gradient(135deg, #1f3a93, #ff6b35);
+  color: white;
+  padding: 3rem 1rem;
+}
+
+.admin-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.admin-page {
+  padding-bottom: 4rem;
+}
+
+.admin-login-card,
+.admin-card {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-login-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 500px;
+}
+
+.admin-login-form label {
+  font-weight: 600;
+}
+
+.admin-login-form input {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #dcdcdc;
+  width: 100%;
+}
+
+.admin-login-form button {
+  width: fit-content;
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 0.9rem 1.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.admin-card-price {
+  font-size: 1.1rem;
+}
+
+.admin-card-body {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-field input {
+  padding: 0.85rem 1rem;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-actions button {
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.error-box,
+.message-box {
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.error-box {
+  background: #ffe6e6;
+  color: #b22a2a;
+}
+
+.message-box {
+  background: #e6fff2;
+  color: #116336;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero h1 {

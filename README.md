@@ -124,6 +124,20 @@ npm run dev
 | GET | `/api/deals/:id` | Obtiene una oferta específica |
 | GET | `/api/stats` | Estadísticas del sistema |
 | GET | `/go/:id` | Redirecciona y cuenta el clic |
+| GET | `/api/admin/products` | Lista productos (requiere Basic Auth) |
+| GET | `/api/admin/products/:id` | Obtiene producto por id (requiere Basic Auth) |
+| POST | `/api/admin/products` | Crea producto con enlace de afiliado (requiere Basic Auth) |
+| PUT | `/api/admin/products/:id` | Actualiza producto (requiere Basic Auth) |
+
+## 🔒 Autenticación de administración
+
+Para usar los endpoints admin, define `ADMIN_PASSWORD` en tu `.env` y envía una cabecera `Authorization: Basic :<password>` con la contraseña. Ejemplo de comando:
+
+```bash
+curl -u :$ADMIN_PASSWORD -X POST http://localhost:5000/api/admin/products \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Producto","price":100,"original_price":150,"url":"https://example.com","url_affiliate":"https://afiliado.com"}'
+```
 
 ## 🌐 Páginas del Frontend
 

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS products (
     discount NUMERIC(5, 4),
     image TEXT,
     url TEXT UNIQUE NOT NULL,
+    url_affiliate TEXT,
     store TEXT DEFAULT 'DealRadar',
     clicks INTEGER DEFAULT 0,
     category TEXT,
