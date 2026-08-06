@@ -86,6 +86,33 @@ export default function Admin() {
     }
   };
 
+  const handleDelete = async (product) => {
+    const confirmDelete = window.confirm('¿Deseas eliminar este producto de forma permanente?');
+    if (!confirmDelete) return;
+
+    try {
+      setSavingId(product.id);
+      setMessage('');
+
+      await axios.delete(`${API_URL}/admin/products/${product.id}`, {
+        headers: authHeader ? { Authorization: authHeader } : {}
+      });
+
+      setProducts((prev) => prev.filter((item) => item.id !== product.id));
+      setDrafts((prev) => {
+        const next = { ...prev };
+        delete next[product.id];
+        return next;
+      });
+      setMessage('Producto eliminado correctamente.');
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      setMessage('Error al eliminar el producto. Revisa la contraseña y el backend.');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const pendingProducts = products.filter(
     (product) => !product.url_affiliate || product.url_affiliate.trim() === ''
   );
@@ -172,6 +199,14 @@ export default function Admin() {
                           disabled={savingId === product.id}
                         >
                           {savingId === product.id ? 'Guardando...' : 'Guardar URL de afiliado'}
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-delete-button"
+                          onClick={() => handleDelete(product)}
+                          disabled={savingId === product.id}
+                        >
+                          Eliminar producto
                         </button>
                       </div>
                     </div>

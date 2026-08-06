@@ -102,6 +102,16 @@ export default async function handler(req, res) {
     }
   }
 
-  res.setHeader('Allow', ['GET', 'PUT']);
+  if (req.method === 'DELETE') {
+    try {
+      await query('DELETE FROM products WHERE id = $1', [id]);
+      return res.status(204).end();
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      return res.status(500).json({ error: 'Error al eliminar producto' });
+    }
+  }
+
+  res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
   return res.status(405).json({ error: 'Method not allowed' });
 }
