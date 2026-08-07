@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const axios = require('axios');
 const {
   canonicalProductUrl,
+  extractAssignedJson,
   fetchBestSellersPage,
   getMeliId,
   inspectMeliHtml,
@@ -13,6 +14,53 @@ test('normaliza ID y URL de publicaciones de Mercado Libre', () => {
   const tracked = 'https://articulo.mercadolibre.cl/MLC-123456789-producto-_JM?tracking_id=abc';
   assert.equal(getMeliId(tracked), 'MLC123456789');
   assert.equal(canonicalProductUrl(tracked), 'https://articulo.mercadolibre.cl/MLC-123456789-_JM');
+});
+
+test('conserva las URL de catálogo de Mercado Libre', () => {
+  const catalog = 'https://www.mercadolibre.cl/producto-ejemplo/p/MLC75478520?tracking_id=abc#reviews';
+  assert.equal(
+    canonicalProductUrl(catalog),
+    'https://www.mercadolibre.cl/producto-ejemplo/p/MLC75478520'
+  );
+});
+
+test('extrae únicamente el objeto JSON asignado en el estado Nordic', () => {
+  const source = '_n.ctx.r={"texto":"llave } interna","valor":1};_n.ctx.r.assets={};';
+  assert.equal(extractAssignedJson(source), '{"texto":"llave } interna","valor":1}');
+});
+
+test('extrae productos Nordic y mezcla las mejores posiciones por categoría', () => {
+  const state = {
+    appProps: { pageProps: { dataLanding: { components: [
+      { items: [
+        { data: { title: 'Celular número uno', price: 100000, original_price: 120000,
+          thumbnail: 'https://http2.mlstatic.com/celular-1.jpg',
+          permalink: 'https://www.mercadolibre.cl/celular/p/MLC10000001', best_sellers_position: '1' },
+          tracking: { eventData: { c_campaign: 'celulares-y-telefonos' } } },
+        { data: { title: 'Celular número dos', price: 90000,
+          thumbnail: 'https://http2.mlstatic.com/celular-2.jpg',
+          permalink: 'https://www.mercadolibre.cl/celular-2/p/MLC10000002', best_sellers_position: '2' },
+          tracking: { eventData: { c_campaign: 'celulares-y-telefonos' } } },
+      ] },
+      { items: [
+        { data: { title: 'Notebook número uno', price: 500000,
+          thumbnail: 'https://http2.mlstatic.com/notebook-1.jpg',
+          permalink: 'https://www.mercadolibre.cl/notebook/p/MLC20000001', best_sellers_position: '1' },
+          tracking: { eventData: { c_campaign: 'computacion' } } },
+      ] },
+    ] } } },
+  };
+  const html = `<script id="__NORDIC_RENDERING_CTX__">_n.ctx.r=${JSON.stringify(state)};_n.ctx.r.assets={};</script>`;
+  const products = parseBestSellers(html);
+
+  assert.deepEqual(products.map((product) => product.title), [
+    'Celular número uno', 'Notebook número uno', 'Celular número dos',
+  ]);
+  assert.deepEqual(products.map((product) => product.category), [
+    'Celulares y Telefonía', 'Computación', 'Celulares y Telefonía',
+  ]);
+  assert.equal(products[0].discount, 1 / 6);
+  assert.equal(products[0].url, 'https://www.mercadolibre.cl/celular/p/MLC10000001');
 });
 
 test('extrae, ordena y deduplica productos desde tarjetas', () => {
