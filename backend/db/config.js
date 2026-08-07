@@ -58,6 +58,12 @@ const initDatabase = async () => {
   try {
     await pool.query(createTableSQL);
     await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS url_affiliate TEXT');
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS meli_id TEXT');
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS is_best_seller BOOLEAN NOT NULL DEFAULT FALSE');
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS best_seller_rank INTEGER');
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP');
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS idx_products_meli_id ON products(meli_id) WHERE meli_id IS NOT NULL');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_products_best_seller_rank ON products(is_best_seller, best_seller_rank)');
     console.log('Base de datos inicializada correctamente');
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
@@ -70,4 +76,3 @@ module.exports = {
   initDatabase,
   query: (text, params) => pool.query(text, params),
 };
-
