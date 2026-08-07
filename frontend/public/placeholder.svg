@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="title">
+  <title>Imagen de oferta no disponible</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6b35" />
+      <stop offset="100%" stop-color="#0046ad" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#000" flood-opacity="0.15" />
+    </filter>
+    <filter id="text-shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.55" />
+    </filter>
+  </defs>
+  <rect width="640" height="360" rx="30" fill="#0f172a" />
+  <rect x="40" y="40" width="560" height="280" rx="24" fill="url(#bg)" filter="url(#shadow)" />
+  <g fill="white" opacity="0.9">
+    <path d="M226 210c0 18.8-15.2 34-34 34s-34-15.2-34-34 15.2-34 34-34 34 15.2 34 34zm-50 0c0 8.8 7.2 16 16 16s16-7.2 16-16-7.2-16-16-16-16 7.2-16 16z" />
+    <path d="M210 210c0 44.2-35.8 80-80 80s-80-35.8-80-80 35.8-80 80-80 80 35.8 80 80zm-12 0c0-37.1-30.1-67.2-67.2-67.2S63.6 172.9 63.6 210 93.7 277.2 130.8 277.2 198 247.1 198 210z" />
+    <path d="M468 190a58 58 0 1 0-28 50.5l70 70a8 8 0 1 0 11.3-11.3l-70-70A57.7 57.7 0 0 0 468 190zm-32 0a42 42 0 1 1 42 42 42.1 42.1 0 0 1-42-42z" />
+  </g>
+  <text x="320" y="180" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="#ffffff" filter="url(#text-shadow)">DealRadar</text>
+  <text x="320" y="220" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#ffffff" opacity="0.85" filter="url(#text-shadow)">Imagen no disponible</text>
+  <text x="320" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" fill="#ffffff" opacity="0.7" filter="url(#text-shadow)">La oferta se mostrará cuando haya imagen</text>
+</svg>

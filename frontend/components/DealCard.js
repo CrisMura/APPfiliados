@@ -20,7 +20,7 @@ const DealCard = ({ product, showBestBadge = false }) => {
     <div className="deal-card">
       <div className="deal-image-container">
         <img
-          src={product.image}
+          src={product.image || '/placeholder.svg'}
           alt={product.title}
           className="deal-image"
           loading="lazy"

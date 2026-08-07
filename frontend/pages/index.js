@@ -84,7 +84,7 @@ export default function Home() {
                 >
                   <div className="ranking-number">#{index + 1}</div>
                   <img 
-                    src={product.image} 
+                    src={product.image || '/placeholder.svg'}
                     alt={product.title}
                     className="ranking-image"
                   />
