@@ -4,6 +4,7 @@ const { randomUUID } = require('crypto');
 const { pool } = require('../db/config');
 
 const BEST_SELLERS_URL = process.env.MELI_BEST_SELLERS_URL || 'https://www.mercadolibre.cl/mas-vendidos';
+const SCRAPE_DO_URL = 'https://api.scrape.do/';
 const MAX_PRODUCTS = Number.parseInt(process.env.MELI_BEST_SELLERS_LIMIT || '15', 10);
 const LOCK_ID = 684531;
 
@@ -149,14 +150,25 @@ function parseBestSellers(html) {
 }
 
 async function fetchBestSellersPage(url = BEST_SELLERS_URL) {
-  const response = await axios.get(url, {
+  const scrapeDoToken = process.env.SCRAPEDO_TOKEN;
+  const requestUrl = scrapeDoToken ? SCRAPE_DO_URL : url;
+  const response = await axios.get(requestUrl, {
+    params: scrapeDoToken ? {
+      token: scrapeDoToken,
+      url,
+      geoCode: 'cl',
+    } : undefined,
     headers: requestHeaders,
-    timeout: 30000,
+    timeout: 60000,
     maxRedirects: 5,
     responseType: 'text',
     validateStatus: (status) => status >= 200 && status < 400,
   });
-  return response.data;
+  const html = response.data;
+  if (/rps:\s*w403|access denied|captcha/i.test(String(html))) {
+    throw new Error('Mercado Libre bloqueó la solicitud incluso a través del proxy');
+  }
+  return html;
 }
 
 async function ensureColumns(client) {
@@ -254,6 +266,7 @@ module.exports = {
   canonicalProductUrl,
   getMeliId,
   parseBestSellers,
+  fetchBestSellersPage,
   syncProducts,
   updateMeliBestSellers,
 };

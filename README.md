@@ -139,8 +139,8 @@ que salen del ranking quedan con `is_best_seller = false`; no se eliminan para p
 
 ### Ejecución sin backend
 
-El workflow `.github/workflows/sync-meli-best-sellers.yml` ejecuta la sincronización cada 5 minutos
-mediante GitHub Actions. Requiere el secreto `DATABASE_URL` configurado en el repositorio y también
+El workflow `.github/workflows/sync-meli-best-sellers.yml` ejecuta la sincronización cada 6 horas
+mediante GitHub Actions. Requiere los secretos `DATABASE_URL` y `SCRAPEDO_TOKEN` configurados en el repositorio y también
 permite una ejecución manual desde la pestaña **Actions**.
 
 ## 🔒 Autenticación de administración
