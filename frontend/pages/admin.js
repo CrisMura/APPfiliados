@@ -176,6 +176,12 @@ export default function Admin() {
                       </div>
                     </div>
 
+                    {product.image && (
+                      <div className="admin-card-image">
+                        <img src={product.image} alt={product.title} />
+                      </div>
+                    )}
+
                     <div className="admin-card-body">
                       <div className="admin-field">
                         <label>Enlace original</label>
