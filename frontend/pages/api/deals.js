@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     const { category, limit = 50 } = req.query;
 
-    let sql = "SELECT * FROM products WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''";
+    let sql = "SELECT * FROM products WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''";
     const params = [];
 
     if (category) {
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       params.push(`%${category.toLowerCase()}%`);
     }
 
-    sql += ' ORDER BY discount DESC LIMIT $' + (params.length + 1);
+    sql += ' ORDER BY best_seller_rank ASC NULLS LAST LIMIT $' + (params.length + 1);
     params.push(parseInt(limit, 10));
 
     const result = await query(sql, params);

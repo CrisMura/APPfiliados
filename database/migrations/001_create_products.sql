@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS products (
     clicks INTEGER DEFAULT 0,
     category TEXT,
     search_query TEXT,
+    meli_id TEXT,
+    is_best_seller BOOLEAN NOT NULL DEFAULT FALSE,
+    best_seller_rank INTEGER,
+    last_seen_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -28,6 +32,8 @@ CREATE INDEX IF NOT EXISTS idx_products_url ON products(url);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_created_at ON products(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_products_score ON products((discount * 100 + clicks));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_products_meli_id ON products(meli_id) WHERE meli_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_products_best_seller_rank ON products(is_best_seller, best_seller_rank);
 
 -- Insertar datos de ejemplo (opcional)
 -- INSERT INTO products (title, price, original_price, discount, image, url, store, category)
@@ -38,4 +44,3 @@ CREATE INDEX IF NOT EXISTS idx_products_score ON products((discount * 100 + clic
 
 --统计
 -- SELECT COUNT(*) as total_products, AVG(discount * 100) as avg_discount FROM products;
-

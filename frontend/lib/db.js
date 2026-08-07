@@ -48,6 +48,12 @@ const initDatabase = async () => {  try {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       clicks INTEGER DEFAULT 0
     );
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS meli_id TEXT;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS is_best_seller BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS best_seller_rank INTEGER;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_products_meli_id ON products(meli_id) WHERE meli_id IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_products_best_seller_rank ON products(is_best_seller, best_seller_rank);
   `;
   await query(createTableSQL);
 };

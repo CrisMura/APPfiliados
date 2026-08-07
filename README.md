@@ -9,6 +9,7 @@ Aplicación web MVP para gestionar ofertas y visualizarlas desde un backend Expr
 - **Frontend Next.js**: Interfaz moderna y responsive optimizada para SEO
 - **Tracking de clics**: Registra los clics en cada oferta
 - **Ranking dinámico**: Las mejores ofertas del día basadas en descuento + clics
+- **Más vendidos de Meli**: Sincroniza los 15 primeros productos del ranking público de Mercado Libre Chile cada 5 minutos
 
 ## 🛠️ Stack Tecnológico
 
@@ -81,6 +82,10 @@ FRONTEND_URL=http://localhost:3000
 
 # Descuento mínimo (30%)
 MIN_DISCOUNT=0.30
+
+# Sincronización de Mercado Libre (opcionales)
+MELI_BEST_SELLERS_LIMIT=15
+MELI_SYNC_ON_START=true
 ```
 
 ### Paso 3: Instalar Dependencias
@@ -129,6 +134,15 @@ npm run dev
 | POST | `/api/admin/products` | Crea producto con enlace de afiliado (requiere Basic Auth) |
 | PUT | `/api/admin/products/:id` | Actualiza producto (requiere Basic Auth) |
 
+La sincronización conserva `url_affiliate`, `clicks` e `id` de productos existentes. Los productos
+que salen del ranking quedan con `is_best_seller = false`; no se eliminan para preservar el historial.
+
+### Ejecución sin backend
+
+El workflow `.github/workflows/sync-meli-best-sellers.yml` ejecuta la sincronización cada 5 minutos
+mediante GitHub Actions. Requiere el secreto `DATABASE_URL` configurado en el repositorio y también
+permite una ejecución manual desde la pestaña **Actions**.
+
 ## 🔒 Autenticación de administración
 
 Para usar los endpoints admin, define `ADMIN_PASSWORD` en tu `.env` y envía una cabecera `Authorization: Basic :<password>` con la contraseña. Ejemplo de comando:
@@ -158,4 +172,3 @@ MIT License - Siéntete libre de usar este proyecto para aprendizaje o proyectos
 ---
 
 ⌨️ Creado con ❤️ por DealRadar
-
