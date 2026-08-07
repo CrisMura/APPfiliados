@@ -2,7 +2,7 @@ name: Sincronizar más vendidos de Meli
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '17 */6 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -37,6 +37,7 @@ jobs:
       - name: Sincronizar productos
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPEDO_TOKEN: ${{ secrets.SCRAPEDO_TOKEN }}
           MELI_BEST_SELLERS_LIMIT: '15'
           MELI_SYNC_ON_START: 'false'
         run: npm run sync:meli

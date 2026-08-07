@@ -5,6 +5,9 @@ async function main() {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL no está configurada');
   }
+  if (!process.env.SCRAPEDO_TOKEN) {
+    throw new Error('SCRAPEDO_TOKEN no está configurado');
+  }
 
   const result = await updateMeliBestSellers();
   console.log(JSON.stringify({

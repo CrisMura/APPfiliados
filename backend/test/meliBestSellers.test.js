@@ -1,6 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { canonicalProductUrl, getMeliId, parseBestSellers } = require('../services/meliBestSellers');
+const axios = require('axios');
+const {
+  canonicalProductUrl,
+  fetchBestSellersPage,
+  getMeliId,
+  parseBestSellers,
+} = require('../services/meliBestSellers');
 
 test('normaliza ID y URL de publicaciones de Mercado Libre', () => {
   const tracked = 'https://articulo.mercadolibre.cl/MLC-123456789-producto-_JM?tracking_id=abc';
@@ -33,4 +39,28 @@ test('extrae, ordena y deduplica productos desde tarjetas', () => {
   assert.equal(products[0].original_price, 20000);
   assert.equal(products[0].discount, 0.25);
   assert.equal(products[1].meli_id, 'MLC222222222');
+});
+
+test('usa Scrape.do con geolocalización chilena cuando existe token', async (t) => {
+  const originalGet = axios.get;
+  const originalToken = process.env.SCRAPEDO_TOKEN;
+  process.env.SCRAPEDO_TOKEN = 'token-de-prueba';
+  t.after(() => {
+    axios.get = originalGet;
+    if (originalToken === undefined) delete process.env.SCRAPEDO_TOKEN;
+    else process.env.SCRAPEDO_TOKEN = originalToken;
+  });
+
+  axios.get = async (requestUrl, options) => {
+    assert.equal(requestUrl, 'https://api.scrape.do/');
+    assert.deepEqual(options.params, {
+      token: 'token-de-prueba',
+      url: 'https://www.mercadolibre.cl/mas-vendidos',
+      geoCode: 'cl',
+    });
+    return { data: '<html>contenido válido</html>' };
+  };
+
+  const html = await fetchBestSellersPage();
+  assert.equal(html, '<html>contenido válido</html>');
 });
