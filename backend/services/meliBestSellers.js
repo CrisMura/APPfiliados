@@ -38,13 +38,14 @@ function getMeliId(url) {
 function canonicalProductUrl(url) {
   const parsed = absoluteUrl(url);
   if (!parsed) return null;
-  const meliId = getMeliId(parsed);
-  if (meliId && /\/MLC-?\d+/i.test(new URL(parsed).pathname)) {
-    return `https://articulo.mercadolibre.cl/${meliId.slice(0, 3)}-${meliId.slice(3)}-_JM`;
-  }
   const result = new URL(parsed);
   result.search = '';
   result.hash = '';
+  if (/\/p\/MLC\d+/i.test(result.pathname)) return result.toString();
+  const meliId = getMeliId(parsed);
+  if (meliId && /\/MLC-?\d+/i.test(result.pathname)) {
+    return `https://articulo.mercadolibre.cl/${meliId.slice(0, 3)}-${meliId.slice(3)}-_JM`;
+  }
   return result.toString();
 }
 
@@ -136,11 +137,90 @@ function parseCards($, products) {
   });
 }
 
+function extractAssignedJson(source, assignment = '_n.ctx.r=') {
+  const text = String(source || '');
+  const assignmentIndex = text.indexOf(assignment);
+  if (assignmentIndex < 0) return null;
+  const start = text.indexOf('{', assignmentIndex + assignment.length);
+  if (start < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < text.length; index += 1) {
+    const character = text[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === '{') depth += 1;
+    else if (character === '}' && --depth === 0) return text.slice(start, index + 1);
+  }
+  return null;
+}
+
+const CATEGORY_NAMES = {
+  'celulares-y-telefonos': 'Celulares y Telefonía',
+  computacion: 'Computación',
+  'electrodomesticos-y-aires-ac': 'Electrodomésticos y Aires Acondicionados',
+  'ropa-y-accesorios': 'Ropa y Accesorios',
+  'electronica-audio-y-video': 'Electrónica, Audio y Video',
+  'accesorios-para-vehiculos': 'Accesorios para Vehículos',
+};
+
+function parseNordicState($, products) {
+  const script = $('#__NORDIC_RENDERING_CTX__').first().text();
+  const json = extractAssignedJson(script);
+  if (!json) return;
+
+  try {
+    const state = JSON.parse(json);
+    const components = state?.appProps?.pageProps?.dataLanding?.components || [];
+    const candidates = [];
+
+    components.forEach((component, componentOrder) => {
+      const items = Array.isArray(component?.items) ? component.items : [];
+      items.forEach((item, itemOrder) => {
+        const data = item?.data || {};
+        const campaign = data?.tracking?.eventData?.c_campaign ||
+          item?.tracking?.eventData?.c_campaign ||
+          component?.data?.viewMoreLink?.tracking?.eventData?.c_campaign;
+        const position = Number.parseInt(data.best_sellers_position, 10);
+        candidates.push({
+          title: cleanText(data.title),
+          price: parseMoney(data.price),
+          original_price: parseMoney(data.original_price),
+          image: data.thumbnail,
+          url: data.permalink,
+          meli_id: getMeliId(data.itemId) || getMeliId(data.permalink),
+          category: CATEGORY_NAMES[campaign] || cleanText(campaign) || 'Más vendidos',
+          sourcePosition: Number.isFinite(position) ? position : Number.MAX_SAFE_INTEGER,
+          componentOrder,
+          itemOrder,
+        });
+      });
+    });
+
+    candidates
+      .sort((a, b) => a.sourcePosition - b.sourcePosition ||
+        a.componentOrder - b.componentOrder || a.itemOrder - b.itemOrder)
+      .forEach((candidate) => pushUnique(products, candidate));
+  } catch (_) {
+    // Si Meli cambia el estado Nordic, se conservan los parsers alternativos.
+  }
+}
+
 function parseBestSellers(html) {
   const $ = cheerio.load(html);
   const products = [];
-  parseJsonLd($, products);
-  parseCards($, products);
+  parseNordicState($, products);
+  if (products.length === 0) {
+    parseJsonLd($, products);
+    parseCards($, products);
+  }
   return products.slice(0, MAX_PRODUCTS).map((product, index) => ({
     ...product,
     rank: index + 1,
@@ -156,6 +236,7 @@ function inspectMeliHtml(html) {
     bytes: Buffer.byteLength(String(html || ''), 'utf8'),
     title: cleanText($('title').first().text()).slice(0, 200),
     jsonLdBlocks: $('script[type="application/ld+json"]').length,
+    nordicBlocks: $('#__NORDIC_RENDERING_CTX__').length,
     polyCards: $('.poly-card').length,
     andesCards: $('.andes-card').length,
     searchCards: $('.ui-search-layout__item, .ui-search-result').length,
@@ -226,12 +307,13 @@ async function syncProducts(products) {
       const values = [
         product.meli_id, product.title, product.price, product.original_price,
         product.discount, product.image, product.url, product.rank,
+        product.category || 'Más vendidos',
       ];
       const existing = await client.query(
         `UPDATE products SET
           meli_id = COALESCE(meli_id, $1), title = $2, price = $3, original_price = $4,
           discount = $5, image = $6, url = $7, store = 'MercadoLibre',
-          category = 'mas-vendidos', search_query = 'mas-vendidos',
+          category = $9, search_query = 'mas-vendidos',
           is_best_seller = TRUE, best_seller_rank = $8, last_seen_at = NOW()
          WHERE ($1::text IS NOT NULL AND meli_id = $1) OR url = $7`,
         values
@@ -241,7 +323,7 @@ async function syncProducts(products) {
         `INSERT INTO products (
           id, meli_id, title, price, original_price, discount, image, url, store,
           category, search_query, is_best_seller, best_seller_rank, last_seen_at
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'MercadoLibre','mas-vendidos','mas-vendidos',TRUE,$9,NOW())
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'MercadoLibre',$10,'mas-vendidos',TRUE,$9,NOW())
         ON CONFLICT (url) DO UPDATE SET
           meli_id = COALESCE(products.meli_id, EXCLUDED.meli_id),
           title = EXCLUDED.title,
@@ -294,6 +376,7 @@ async function updateMeliBestSellers() {
 
 module.exports = {
   canonicalProductUrl,
+  extractAssignedJson,
   getMeliId,
   inspectMeliHtml,
   parseBestSellers,
