@@ -5,6 +5,7 @@ const {
   canonicalProductUrl,
   fetchBestSellersPage,
   getMeliId,
+  inspectMeliHtml,
   parseBestSellers,
 } = require('../services/meliBestSellers');
 
@@ -63,4 +64,19 @@ test('usa Scrape.do con geolocalización chilena cuando existe token', async (t)
 
   const html = await fetchBestSellersPage();
   assert.equal(html, '<html>contenido válido</html>');
+});
+
+test('genera diagnóstico estructural sin incluir contenido sensible', () => {
+  const diagnostics = inspectMeliHtml(`
+    <html><head><title>Más vendidos | Mercado Libre Chile</title></head>
+    <body>
+      <a href="/mas-vendidos/MLC1747">Categoría</a>
+      <div class="ui-recommendation-card"><a href="/p/MLC123456">Producto</a></div>
+    </body></html>
+  `);
+  assert.equal(diagnostics.title, 'Más vendidos | Mercado Libre Chile');
+  assert.equal(diagnostics.recommendationCards, 1);
+  assert.equal(diagnostics.productLinks, 1);
+  assert.equal(diagnostics.categoryLinks, 1);
+  assert.equal(diagnostics.totalLinks, 2);
 });
