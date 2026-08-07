@@ -557,6 +557,34 @@ body {
   gap: 1rem;
 }
 
+.admin-link-row {
+  display: block;
+}
+
+.admin-link-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-link-preview a {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-link-preview img {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #f8f9fa;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
 .admin-field {
   display: flex;
   flex-direction: column;

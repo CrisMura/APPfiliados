@@ -176,16 +176,15 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    {product.image && (
-                      <div className="admin-card-image">
-                        <img src={product.image} alt={product.title} />
-                      </div>
-                    )}
-
                     <div className="admin-card-body">
-                      <div className="admin-field">
+                      <div className="admin-field admin-link-row">
                         <label>Enlace original</label>
-                        <a href={product.url} target="_blank" rel="noreferrer">Abrir</a>
+                        <div className="admin-link-preview">
+                          <a href={product.url} target="_blank" rel="noreferrer">Abrir</a>
+                          {product.image && (
+                            <img src={product.image} alt={product.title} />
+                          )}
+                        </div>
                       </div>
 
                       <div className="admin-field">
