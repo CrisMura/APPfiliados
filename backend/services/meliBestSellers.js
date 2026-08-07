@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { randomUUID } = require('crypto');
+const fs = require('fs');
 const { pool } = require('../db/config');
 
 const BEST_SELLERS_URL = process.env.MELI_BEST_SELLERS_URL || 'https://www.mercadolibre.cl/mas-vendidos';
@@ -149,6 +150,32 @@ function parseBestSellers(html) {
   }));
 }
 
+function inspectMeliHtml(html) {
+  const $ = cheerio.load(String(html || ''));
+  return {
+    bytes: Buffer.byteLength(String(html || ''), 'utf8'),
+    title: cleanText($('title').first().text()).slice(0, 200),
+    jsonLdBlocks: $('script[type="application/ld+json"]').length,
+    polyCards: $('.poly-card').length,
+    andesCards: $('.andes-card').length,
+    searchCards: $('.ui-search-layout__item, .ui-search-result').length,
+    recommendationCards: $('[class*="recommendation"][class*="card"]').length,
+    productLinks: $('a[href*="/MLC"], a[href*="/p/MLC"], a[href*="articulo.mercadolibre.cl"]')
+      .filter((_, link) => !String($(link).attr('href')).includes('/mas-vendidos/MLC')).length,
+    categoryLinks: $('a[href*="/mas-vendidos/MLC"]').length,
+    totalLinks: $('a[href]').length,
+  };
+}
+
+function writeDiagnosticHtml(html) {
+  const diagnosticFile = process.env.MELI_DIAGNOSTIC_FILE;
+  if (!diagnosticFile) return;
+  const token = process.env.SCRAPEDO_TOKEN;
+  const limited = String(html || '').slice(0, 1_000_000);
+  const sanitized = token ? limited.split(token).join('[REDACTED]') : limited;
+  fs.writeFileSync(diagnosticFile, sanitized, 'utf8');
+}
+
 async function fetchBestSellersPage(url = BEST_SELLERS_URL) {
   const scrapeDoToken = process.env.SCRAPEDO_TOKEN;
   const requestUrl = scrapeDoToken ? SCRAPE_DO_URL : url;
@@ -252,7 +279,10 @@ async function updateMeliBestSellers() {
     }
 
     const html = await fetchBestSellersPage();
+    const diagnostics = inspectMeliHtml(html);
+    console.log(`[meli-diagnostics] ${JSON.stringify(diagnostics)}`);
     const products = parseBestSellers(html);
+    if (products.length === 0) writeDiagnosticHtml(html);
     const updated = await syncProducts(products);
     console.log(`Ranking Meli actualizado: ${updated} productos`);
     return { skipped: false, updated };
@@ -265,6 +295,7 @@ async function updateMeliBestSellers() {
 module.exports = {
   canonicalProductUrl,
   getMeliId,
+  inspectMeliHtml,
   parseBestSellers,
   fetchBestSellersPage,
   syncProducts,

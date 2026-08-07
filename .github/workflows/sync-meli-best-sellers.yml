@@ -40,4 +40,14 @@ jobs:
           SCRAPEDO_TOKEN: ${{ secrets.SCRAPEDO_TOKEN }}
           MELI_BEST_SELLERS_LIMIT: '15'
           MELI_SYNC_ON_START: 'false'
+          MELI_DIAGNOSTIC_FILE: 'meli-diagnostic.html'
         run: npm run sync:meli
+
+      - name: Guardar diagnóstico de Meli
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meli-diagnostic-${{ github.run_id }}
+          path: backend/meli-diagnostic.html
+          if-no-files-found: ignore
+          retention-days: 3
