@@ -6,6 +6,7 @@ const PROFILE_DIR = process.env.MELI_AFFILIATE_PROFILE_DIR ||
   path.resolve(__dirname, '..', '..', '.meli-affiliate-profile');
 const LIMIT = Number.parseInt(process.env.MELI_AFFILIATE_LIMIT || '15', 10);
 const DELAY_MS = Number.parseInt(process.env.MELI_AFFILIATE_DELAY_MS || '4000', 10);
+const COMMISSION_TIMEOUT_MS = Number.parseInt(process.env.MELI_AFFILIATE_COMMISSION_TIMEOUT_MS || '20000', 10);
 
 function parseCommission(text) {
   const normalized = String(text || '').replace(/\s+/g, ' ').trim();
@@ -23,44 +24,79 @@ function parseCommission(text) {
 function isAffiliateUrl(value) {
   try {
     const url = new URL(String(value || ''));
-    return /(^|\.)mercadolibre\.cl$/i.test(url.hostname) && /\/sec\//i.test(url.pathname);
+    if (url.protocol !== 'https:') return false;
+
+    const isLegacyMeliLink =
+      /(^|\.)mercadolibre\.cl$/i.test(url.hostname) && /\/sec\/[^/]+/i.test(url.pathname);
+    const isCurrentMeliLink =
+      /^meli\.la$/i.test(url.hostname) && /^\/[a-z0-9_-]+\/?$/i.test(url.pathname);
+
+    return isLegacyMeliLink || isCurrentMeliLink;
   } catch (_) {
     return false;
   }
 }
 
 async function findCommission(page) {
-  const candidates = page.locator('body').getByText(/(?:comisi[oó]n|ganas?|recibe(?:s)?)[^\n]{0,80}%|%[^\n]{0,80}(?:comisi[oó]n|ganas?|recibe(?:s)?)/i);
-  const count = Math.min(await candidates.count(), 10);
-  for (let index = 0; index < count; index += 1) {
-    const text = await candidates.nth(index).innerText().catch(() => '');
-    const commission = parseCommission(text);
+  const deadline = Date.now() + COMMISSION_TIMEOUT_MS;
+  do {
+    const bodyText = await page.locator('body').innerText().catch(() => '');
+    const commission = parseCommission(bodyText);
     if (commission !== null) return commission;
-  }
-  return parseCommission(await page.locator('body').innerText());
+
+    if (Date.now() < deadline) await page.waitForTimeout(500);
+  } while (Date.now() < deadline);
+
+  return null;
 }
 
 async function openShareModal(page) {
   const button = page.getByRole('button', { name: /compartir/i }).first();
-  if (!(await button.isVisible().catch(() => false))) {
+  try {
+    await button.waitFor({ state: 'visible', timeout: 10000 });
+  } catch (_) {
     throw new Error('No se encontró el botón Compartir; la sesión puede haber vencido');
   }
   await button.click();
   await page.getByText(/link del producto/i).first().waitFor({ state: 'visible', timeout: 10000 });
 }
 
+async function readFieldValue(locator) {
+  return locator.evaluate((element) => {
+    const propertyValue = typeof element.value === 'string' ? element.value : '';
+    return propertyValue || element.getAttribute('value') || element.textContent || '';
+  }).catch(() => '');
+}
+
 async function readAffiliateUrl(page) {
-  const label = page.getByText(/link del producto/i).first();
-  const modal = label.locator('xpath=ancestor::*[@role="dialog"][1]');
-  const scope = (await modal.count()) ? modal : page.locator('body');
-  const inputs = scope.locator('input');
-  const count = await inputs.count();
-  for (let index = 0; index < count; index += 1) {
-    const value = await inputs.nth(index).inputValue().catch(() => '');
-    if (isAffiliateUrl(value)) return value;
-  }
-  const links = scope.locator('a[href*="mercadolibre.cl/sec/"]');
-  if (await links.count()) return links.first().getAttribute('href');
+  const deadline = Date.now() + 15000;
+  do {
+    const label = page.getByText(/link del producto/i).first();
+    const nearbyFields = label.locator(
+      'xpath=following::*[self::input or self::textarea or @role="textbox"][1]'
+    );
+    const modal = label.locator('xpath=ancestor::*[@role="dialog"][1]');
+    const scope = (await modal.count()) ? modal : page.locator('body');
+    const candidates = [nearbyFields, scope.locator('input, textarea, [role="textbox"]')];
+
+    for (const fields of candidates) {
+      const count = Math.min(await fields.count(), 30);
+      for (let index = 0; index < count; index += 1) {
+        const value = (await readFieldValue(fields.nth(index))).trim();
+        if (isAffiliateUrl(value)) return value;
+      }
+    }
+
+    const links = scope.locator('a[href*="mercadolibre.cl/sec/"], a[href^="https://meli.la/"]');
+    const linkCount = await links.count();
+    for (let index = 0; index < linkCount; index += 1) {
+      const href = await links.nth(index).getAttribute('href');
+      if (isAffiliateUrl(href)) return href;
+    }
+
+    if (Date.now() < deadline) await page.waitForTimeout(500);
+  } while (Date.now() < deadline);
+
   throw new Error('El modal no contiene un link de afiliado reconocible');
 }
 
