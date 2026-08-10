@@ -2,8 +2,11 @@ name: Sincronizar más vendidos de Meli
 
 on:
   schedule:
-    - cron: '30 11 * * *'
-    - cron: '30 21 * * *'
+    - cron: '30 8 * * *'
+      timezone: 'America/Santiago'
+
+    - cron: '30 18 * * *'
+      timezone: 'America/Santiago'
   workflow_dispatch:
 
 concurrency:
