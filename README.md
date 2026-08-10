@@ -172,3 +172,20 @@ MIT License - Siéntete libre de usar este proyecto para aprendizaje o proyectos
 ---
 
 ⌨️ Creado con ❤️ por DealRadar
+# Links de afiliado de Mercado Libre (proceso local)
+
+Este proceso se ejecuta en Windows porque necesita una sesión autenticada de Mercado Libre. La sesión se guarda únicamente en `.meli-affiliate-profile/`, carpeta excluida de Git.
+
+1. Crea un archivo `.env` en la raíz con `DATABASE_URL` apuntando a Neon.
+2. Ejecuta `setup-affiliate-links.bat` una sola vez, inicia sesión y confirma que la barra negra de afiliados aparezca sobre un producto.
+3. Ejecuta `sync-affiliate-links.bat` para revisar los productos más vendidos sin enlace.
+
+El sincronizador guarda `url_affiliate` solo si la comisión mostrada es mayor que 0%. Nunca reemplaza un enlace afiliado existente. Si la sesión vence, vuelve a ejecutar `setup-affiliate-links.bat`.
+
+Variables opcionales del archivo `.env`:
+
+```env
+MELI_AFFILIATE_LIMIT=15
+MELI_AFFILIATE_DELAY_MS=4000
+MELI_AFFILIATE_HEADLESS=true
+```
