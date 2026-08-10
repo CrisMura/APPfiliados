@@ -9,9 +9,13 @@ test('lee formatos habituales de comisión de Meli', () => {
   assert.equal(parseCommission('Envío gratis'), null);
 });
 
-test('acepta solamente links afiliados sec de Mercado Libre Chile', () => {
+test('acepta los formatos de links afiliados de Mercado Libre', () => {
   assert.equal(isAffiliateUrl('https://www.mercadolibre.cl/sec/ABC123'), true);
   assert.equal(isAffiliateUrl('https://mercadolibre.cl/sec/xyz'), true);
+  assert.equal(isAffiliateUrl('https://meli.la/12nYNLG'), true);
   assert.equal(isAffiliateUrl('https://articulo.mercadolibre.cl/MLC-123'), false);
   assert.equal(isAffiliateUrl('https://evil.example/sec/ABC123'), false);
+  assert.equal(isAffiliateUrl('http://meli.la/12nYNLG'), false);
+  assert.equal(isAffiliateUrl('https://meli.la/'), false);
+  assert.equal(isAffiliateUrl('https://evil.example/meli.la/12nYNLG'), false);
 });
