@@ -35,3 +35,6 @@ build/
 # Temporary files
 *.tmp
 *.swp
+
+# Sesión local de afiliados de Meli
+.meli-affiliate-profile/
