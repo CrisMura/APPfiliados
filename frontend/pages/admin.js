@@ -136,78 +136,97 @@ export default function Admin() {
     }
   };
 
+
+
+
+
+
+
+
+
 const handlePublishInstagramStory = async (product) => {
   setStoryPublishingId(product.id);
   setMessage('');
 
   const shareUrl = product.url_affiliate?.trim();
   const shareText = `Link de compra\n${shareUrl}`;
-
-  // 1. Detectar si el usuario está en un dispositivo móvil
   const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+  let copiadoExitoso = false;
   try {
-    if (esMovil) {
-      // 2. Intentar copiar el texto/enlace al portapapeles de forma nativa
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(shareText);
-        setMessage('¡Enlace copiado! Abriendo Instagram Stories para que lo pegues como Sticker...');
-      } else {
-        // Respaldo clásico de copia si clipboard falla en navegadores internos
-        const textArea = document.createElement("textarea");
-        textArea.value = shareText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
-
-      // 3. Forzar la actualización del estado en tu base de datos mediante Axios
-      await axios.put(
-        `${API_URL}/admin/products/${product.id}`,
-        { shared_instagram: true },
-        { headers: authHeaders }
-      );
-
-      // Actualizar el estado de la lista de productos local
-      setProducts((prev) =>
-        prev.map((item) =>
-          item.id === product.id ? { ...item, shared_instagram: true } : item
-        )
-      );
-
-      // 4. Redirigir inmediatamente a la cámara de Instagram Stories (Deep Link)
-      window.location.href = "instagram://story-camera";
-
-      // 5. Plan de respaldo si la aplicación de Instagram no está instalada en el celular
-      setTimeout(() => {
-        if (document.hidden) return; // Si la app se abrió correctamente, la pestaña se oculta y no hace nada
-        
-        const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (esiOS) {
-          window.location.href = "https://apple.com";
-        } else {
-          window.location.href = "https://google.com";
-        }
-      }, 2500);
-
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareText);
+      copiadoExitoso = true;
     } else {
-      // Flujo de respaldo para Computadoras de escritorio (Desktop)
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(shareText);
-        setMessage('Texto copiado al portapapeles. Abre Instagram desde tu móvil para publicar la historia.');
-      } else {
-        window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
-        setMessage('Usa el texto copiado para publicar en Instagram Stories.');
-      }
+      const textArea = document.createElement("textarea");
+      textArea.value = shareText;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      textArea.setSelectionRange(0, 99999);
+      copiadoExitoso = document.execCommand('copy');
+      document.body.removeChild(textArea);
     }
-  } catch (error) {
-    console.error('Error al procesar la publicación en Instagram:', error);
-    setMessage('No fue posible automatizar la acción. Intenta copiar el enlace manualmente.');
+  } catch (clipboardError) {
+    console.warn("Fallo el copiado inmediato:", clipboardError);
+  }
+
+  if (copiadoExitoso) {
+    setMessage(esMovil
+      ? '¡Enlace copiado! Abriendo Instagram Stories...'
+      : 'Texto copiado al portapapeles. Abre Instagram en tu móvil.'
+    );
+  } else {
+    window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
+    setMessage('Usa el texto copiado para publicar en Instagram Stories.');
+  }
+
+  if (esMovil) {
+    window.location.href = "instagram://story-camera";
+
+    setTimeout(() => {
+      if (document.hidden) return;
+      const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      window.location.href = esiOS ? "https://apple.com" : "https://google.com";
+    }, 2500);
+  }
+
+  try {
+    await axios.put(
+      `${API_URL}/admin/products/${product.id}`,
+      { shared_instagram: true },
+      { headers: authHeaders }
+    );
+
+    setProducts((prev) =>
+      prev.map((item) =>
+        item.id === product.id ? { ...item, shared_instagram: true } : item
+      )
+    );
+  } catch (apiError) {
+    console.error('Error al actualizar el estado en el servidor:', apiError);
   } finally {
     setStoryPublishingId(null);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   const pendingCount = products.filter(
