@@ -15,25 +15,34 @@ export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [storyPublishingId, setStoryPublishingId] = useState(null);
 
-  const authHeader = password ? `Basic ${btoa(`:${password}`)}` : null;
+  const buildAuthHeaders = (pw) => {
+    const value = pw || password;
+    return value ? { Authorization: `Basic ${btoa(`:${value}`)}` } : {};
+  };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (pw) => {
     try {
       setLoading(true);
       setAuthError(null);
       setMessage('');
 
       const response = await axios.get(`${API_URL}/admin/products?limit=200`, {
-        headers: authHeader ? { Authorization: authHeader } : {}
+        headers: buildAuthHeaders(pw),
       });
 
       setProducts(response.data);
       setLoggedIn(true);
+      return true;
     } catch (err) {
       console.error('Error fetching admin products:', err);
+      if (err.response?.status === 401) {
+        sessionStorage.removeItem('adminPassword');
+        setPassword('');
+      }
       setAuthError('No se pudieron cargar los productos. Verifica la contraseña de admin.');
       setLoggedIn(false);
       setProducts([]);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -45,7 +54,11 @@ export default function Admin() {
       setAuthError('Debes ingresar la contraseña de admin.');
       return;
     }
-    await fetchProducts();
+
+    const success = await fetchProducts(password);
+    if (success) {
+      sessionStorage.setItem('adminPassword', password);
+    }
   };
 
   const handleAffiliateChange = (id, value) => {
@@ -53,6 +66,13 @@ export default function Admin() {
       ...prev,
       [id]: value,
     }));
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminPassword');
+    setPassword('');
+    setLoggedIn(false);
+    setProducts([]);
   };
 
   const handleSave = async (product) => {
@@ -169,6 +189,14 @@ export default function Admin() {
     (product) => !product.url_affiliate || product.url_affiliate.trim() === ''
   ).length;
 
+  useEffect(() => {
+    const savedPassword = sessionStorage.getItem('adminPassword');
+    if (savedPassword) {
+      setPassword(savedPassword);
+      fetchProducts(savedPassword);
+    }
+  }, []);
+
   return (
     <Layout title="Admin - DealRadar">
       <section className="admin-header">
@@ -179,6 +207,11 @@ export default function Admin() {
           <div className="admin-summary">
             <div>Total productos: {products.length}</div>
             <div>Productos sin URL de afiliado: {pendingCount}</div>
+            {loggedIn && (
+              <button type="button" className="admin-logout-button" onClick={handleLogout}>
+                Cerrar sesión
+              </button>
+            )}
           </div>
         </div>
       </section>

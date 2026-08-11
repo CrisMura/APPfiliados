@@ -626,26 +626,14 @@ body {
   background: #e63946;
 }
 
-.admin-delete-button:hover {
-  background: #c92c3b;
-}
+  .admin-logout-button {
+    background: #495057;
+    margin-top: 0.75rem;
+  }
 
-.admin-card-meta {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.shared-badge {
-  display: inline-flex;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.shared-yes {
-  background: #e6fff2;
-  color: #116336;
+  .admin-logout-button:hover {
+    background: #343a40;
+  }
 }
 
 .shared-no {
