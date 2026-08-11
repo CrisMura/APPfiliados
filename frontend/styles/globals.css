@@ -99,6 +99,7 @@ body {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .nav-link {
@@ -659,9 +660,9 @@ body {
 }
 
 .header-actions {
-  margin-left: auto;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .header-logout-button,
