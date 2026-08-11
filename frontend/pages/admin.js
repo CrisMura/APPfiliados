@@ -141,7 +141,7 @@ export default function Admin() {
     setMessage('');
 
     const shareUrl = product.url_affiliate?.trim();
-    const shareText = `Link de compra`;
+    const shareText = `Link de comprass`;
     const shareData = {
       title: 'Link de compras',
       text: shareText,
