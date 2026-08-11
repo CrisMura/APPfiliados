@@ -184,7 +184,7 @@ const handlePublishInstagramStory = async (product) => {
 
   if (esMovil) {
     // NUEVA URL: Utiliza el compartidor oficial de Meta que genera la previsualización interactiva de tu enlace
-    const metaShareUrl = `https://instagram.com{encodeURIComponent(shareUrl)}`;
+    const metaShareUrl = `https://instagram.com${encodeURIComponent(shareUrl)}`;
     window.location.href = metaShareUrl;
 
     setTimeout(() => {
