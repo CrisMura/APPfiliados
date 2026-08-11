@@ -136,101 +136,56 @@ export default function Admin() {
     }
   };
 
+  const handlePublishInstagramStory = async (product) => {
+    setStoryPublishingId(product.id);
+    setMessage('');
 
+    const shareUrl = product.url_affiliate?.trim();
+    const shareText = `Link de compra\n${shareUrl}`;
+    const shareData = {
+      title: 'Link de compra',
+      text: shareText,
+      url: shareUrl,
+    };
 
+    try {
+      if (navigator.share) {
+        if (product.image && navigator.canShare) {
+          try {
+            const response = await fetch(product.image, { mode: 'cors' });
+            const blob = await response.blob();
+            const file = new File([blob], 'product-image.jpg', { type: blob.type || 'image/jpeg' });
 
+            if (navigator.canShare({ files: [file] })) {
+              shareData.files = [file];
+            }
+          } catch (imageError) {
+            console.warn('No se pudo cargar la imagen para compartir:', imageError);
+          }
+        }
 
-
-
-
-
-const handlePublishInstagramStory = async (product) => {
-  setStoryPublishingId(product.id);
-  setMessage('');
-
-  const shareUrl = product.url_affiliate?.trim();
-  const shareText = `Link de compra\n${shareUrl}`;
-  const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  let copiadoExitoso = false;
-  try {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(shareText);
-      copiadoExitoso = true;
-    } else {
-      const textArea = document.createElement("textarea");
-      textArea.value = shareText;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.select();
-      textArea.setSelectionRange(0, 99999);
-      copiadoExitoso = document.execCommand('copy');
-      document.body.removeChild(textArea);
+        await navigator.share(shareData);
+        await axios.put(
+          `${API_URL}/admin/products/${product.id}`,
+          { shared_instagram: true },
+          { headers: authHeaders }
+        );
+        setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, shared_instagram: true } : item));
+        setMessage('Compartido en Instagram. El estado se actualizó correctamente.');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareText);
+        setMessage('Texto copiado al portapapeles. Abre Instagram Stories y pega la descripción manualmente.');
+      } else {
+        window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
+        setMessage('Usa el texto copiado para publicar en Instagram Stories.');
+      }
+    } catch (error) {
+      console.error('Error al compartir en Instagram:', error);
+      setMessage('No fue posible abrir el diálogo de compartir. Intenta copiar y pegar manualmente.');
+    } finally {
+      setStoryPublishingId(null);
     }
-  } catch (clipboardError) {
-    console.warn("Fallo el copiado inmediato:", clipboardError);
-  }
-
-  if (copiadoExitoso) {
-    setMessage(esMovil
-      ? '¡Enlace copiado! Abriendo Instagram Stories...'
-      : 'Texto copiado al portapapeles. Abre Instagram en tu móvil.'
-    );
-  } else {
-    window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
-    setMessage('Usa el texto copiado para publicar en Instagram Stories.');
-  }
-
-  if (esMovil) {
-    // NUEVA URL: Utiliza el compartidor oficial de Meta que genera la previsualización interactiva de tu enlace
-    const metaShareUrl = `https://instagram.com${encodeURIComponent(shareUrl)}`;
-    window.location.href = metaShareUrl;
-
-    setTimeout(() => {
-      if (document.hidden) return;
-      const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      window.location.href = esiOS ? "https://apple.com" : "https://google.com";
-    }, 2500);
-  }
-
-  try {
-    await axios.put(
-      `${API_URL}/admin/products/${product.id}`,
-      { shared_instagram: true },
-      { headers: authHeaders }
-    );
-
-    setProducts((prev) =>
-      prev.map((item) =>
-        item.id === product.id ? { ...item, shared_instagram: true } : item
-      )
-    );
-  } catch (apiError) {
-    console.error('Error al actualizar el estado en el servidor:', apiError);
-  } finally {
-    setStoryPublishingId(null);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  };
 
   const pendingCount = products.filter(
     (product) => !product.url_affiliate || product.url_affiliate.trim() === ''
