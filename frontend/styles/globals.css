@@ -634,18 +634,10 @@ body {
   .admin-logout-button:hover {
     background: #343a40;
   }
-}
 
-.shared-no {
-  background: #f1f3f5;
-  color: #495057;
-}
-
-.error-box,
-.message-box {
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
+.shared-yes {
+  background: #e6fff2;
+  color: #116336;
 }
 
 .error-box {
