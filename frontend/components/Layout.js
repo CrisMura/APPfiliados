@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 
-const Layout = ({ children, title = 'DealRadar - Las mejores ofertas' }) => {
+const Layout = ({ children, title = 'DealRadar - Las mejores ofertas', navActions = null }) => {
   return (
     <>
       <Head>
@@ -28,6 +28,7 @@ const Layout = ({ children, title = 'DealRadar - Las mejores ofertas' }) => {
             <Link href="/ofertas/hogar" className="nav-link">Hogar</Link>
             <Link href="/ofertas/herramientas" className="nav-link">Herramientas</Link>
           </nav>
+          {navActions && <div className="header-actions">{navActions}</div>}
         </div>
       </header>
 

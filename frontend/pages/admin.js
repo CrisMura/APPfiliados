@@ -20,6 +20,8 @@ export default function Admin() {
     return value ? { Authorization: `Basic ${btoa(`:${value}`)}` } : {};
   };
 
+  const authHeaders = buildAuthHeaders();
+
   const fetchProducts = async (pw) => {
     try {
       setLoading(true);
@@ -89,7 +91,7 @@ export default function Admin() {
       const response = await axios.put(
         `${API_URL}/admin/products/${product.id}`,
         { url_affiliate: affiliateUrl.trim() },
-        { headers: authHeader ? { Authorization: authHeader } : {} }
+        { headers: authHeaders }
       );
 
       setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, url_affiliate: response.data.url_affiliate } : item));
@@ -116,7 +118,7 @@ export default function Admin() {
       setMessage('');
 
       await axios.delete(`${API_URL}/admin/products/${product.id}`, {
-        headers: authHeader ? { Authorization: authHeader } : {}
+        headers: authHeaders
       });
 
       setProducts((prev) => prev.filter((item) => item.id !== product.id));
@@ -166,7 +168,7 @@ export default function Admin() {
         await axios.put(
           `${API_URL}/admin/products/${product.id}`,
           { shared_instagram: true },
-          { headers: authHeader ? { Authorization: authHeader } : {} }
+          { headers: authHeaders }
         );
         setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, shared_instagram: true } : item));
         setMessage('Compartido en Instagram. El estado se actualizó correctamente.');
@@ -198,7 +200,14 @@ export default function Admin() {
   }, []);
 
   return (
-    <Layout title="Admin - DealRadar">
+    <Layout
+      title="Admin - DealRadar"
+      navActions={loggedIn ? (
+        <button type="button" className="header-logout-button" onClick={handleLogout}>
+          Cerrar sesión
+        </button>
+      ) : null}
+    >
       <section className="admin-header">
         <div className="container">
           <h1>Panel de Administración</h1>
@@ -207,11 +216,6 @@ export default function Admin() {
           <div className="admin-summary">
             <div>Total productos: {products.length}</div>
             <div>Productos sin URL de afiliado: {pendingCount}</div>
-            {loggedIn && (
-              <button type="button" className="admin-logout-button" onClick={handleLogout}>
-                Cerrar sesión
-              </button>
-            )}
           </div>
         </div>
       </section>
@@ -265,6 +269,16 @@ export default function Admin() {
                     <div className="admin-card-body">
                       <div className="admin-card-meta">
                         <span className={`shared-badge ${product.shared_instagram ? 'shared-yes' : 'shared-no'}`}>
+                          <svg className={`instagram-icon ${product.shared_instagram ? 'small' : 'small'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                            <linearGradient id="igGrad" x1="0%" x2="100%">
+                              <stop offset="0%" stopColor="#f58529" />
+                              <stop offset="50%" stopColor="#dd2a7b" />
+                              <stop offset="100%" stopColor="#8134af" />
+                            </linearGradient>
+                            <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#igGrad)" />
+                            <circle cx="12" cy="12" r="3.2" fill="#fff" />
+                            <circle cx="17.5" cy="6.5" r="0.9" fill="#fff" />
+                          </svg>
                           {product.shared_instagram ? 'Compartido en Instagram' : 'No compartido'}
                         </span>
                       </div>
@@ -295,7 +309,23 @@ export default function Admin() {
                           onClick={() => handlePublishInstagramStory(product)}
                           disabled={storyPublishingId === product.id}
                         >
-                          {storyPublishingId === product.id ? 'Compartiendo...' : 'Publicar historia de Instagram'}
+                          {storyPublishingId === product.id ? (
+                            'Compartiendo...'
+                          ) : (
+                            <>
+                              <svg className="instagram-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <linearGradient id="igBtnGrad" x1="0%" x2="100%">
+                                  <stop offset="0%" stopColor="#f58529" />
+                                  <stop offset="50%" stopColor="#dd2a7b" />
+                                  <stop offset="100%" stopColor="#8134af" />
+                                </linearGradient>
+                                <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#igBtnGrad)" />
+                                <circle cx="12" cy="12" r="3.2" fill="#fff" />
+                                <circle cx="17.5" cy="6.5" r="0.9" fill="#fff" />
+                              </svg>
+                              <span style={{ marginLeft: 8 }}>Publicar historia de Instagram</span>
+                            </>
+                          )}
                         </button>
                         <button
                           type="button"

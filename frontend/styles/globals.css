@@ -45,21 +45,35 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
-
-.logo {
+.header-logout-button,
+.admin-logout-button {
+  background: #495057;
   color: white;
-  font-size: 1.8rem;
-  font-weight: 800;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
 }
 
+.header-logout-button:hover,
+.admin-logout-button:hover {
+  background: #343a40;
+}
+
+.instagram-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.instagram-icon.small {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+}
 .logo-icon {
   font-size: 2rem;
 }
@@ -235,6 +249,7 @@ body {
   margin-bottom: 0.5rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 2.8rem;
@@ -626,14 +641,25 @@ body {
   background: #e63946;
 }
 
-  .admin-logout-button {
-    background: #495057;
-    margin-top: 0.75rem;
-  }
+.header-actions {
+  margin-left: 1rem;
+}
 
-  .admin-logout-button:hover {
-    background: #343a40;
-  }
+.header-logout-button,
+.admin-logout-button {
+  background: #495057;
+  color: white;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.header-logout-button:hover,
+.admin-logout-button:hover {
+  background: #343a40;
+}
 
 .shared-yes {
   background: #e6fff2;
