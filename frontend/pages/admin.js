@@ -384,21 +384,24 @@ export default function Admin() {
                             </>
                           )}
                         </button>
+
+
+
+
+
                             <button
-                              onClick={manejarCompartir}
-                              style={{
-                                padding: '12px 24px',
-                                backgroundColor: '#E1306C',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s',
-                              }}
+                              type="button"
+                              onClick={manejarCompartir}                              
                             >
                               {copiado ? "¡Enlace copiado! Abriendo Instagram..." : "Compartir en Instagram Stories"}
                           </button>
+
+
+
+
+
+
+
                         <button
                           type="button"
                           onClick={() => handleSave(product)}
