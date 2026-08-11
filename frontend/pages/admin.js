@@ -141,15 +141,16 @@ export default function Admin() {
     setMessage('');
 
     const shareUrl = product.url_affiliate?.trim();
-    const shareText = `Link de comprass`;
+    const shareText = `Link de compra\n${shareUrl}`;
     const shareData = {
-      title: 'Link de compras',
+      title: 'Link de compra',
       text: shareText,
-      url: shareUrl,
     };
 
     try {
       if (navigator.share) {
+        let sharedFile = false;
+
         if (product.image && navigator.canShare) {
           try {
             const response = await fetch(product.image, { mode: 'cors' });
@@ -158,10 +159,15 @@ export default function Admin() {
 
             if (navigator.canShare({ files: [file] })) {
               shareData.files = [file];
+              sharedFile = true;
             }
           } catch (imageError) {
             console.warn('No se pudo cargar la imagen para compartir:', imageError);
           }
+        }
+
+        if (!sharedFile && shareUrl) {
+          shareData.url = shareUrl;
         }
 
         await navigator.share(shareData);
