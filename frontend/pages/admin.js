@@ -53,7 +53,7 @@ export default function BotonInstagram({ urlACompartir = "" }) {
     }, 2500);
   };
 
-
+}
 
 
 
