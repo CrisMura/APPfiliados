@@ -41,6 +41,7 @@ const initDatabase = async () => {
       image TEXT,
       url TEXT UNIQUE NOT NULL,
       url_affiliate TEXT,
+      shared_instagram BOOLEAN NOT NULL DEFAULT FALSE,
       store TEXT DEFAULT 'DealRadar',
       clicks INTEGER DEFAULT 0,
       category TEXT,
@@ -58,6 +59,7 @@ const initDatabase = async () => {
   try {
     await pool.query(createTableSQL);
     await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS url_affiliate TEXT');
+    await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS shared_instagram BOOLEAN NOT NULL DEFAULT FALSE');
     await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS meli_id TEXT');
     await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS is_best_seller BOOLEAN NOT NULL DEFAULT FALSE');
     await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS best_seller_rank INTEGER');

@@ -601,6 +601,7 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .admin-actions button {
@@ -613,12 +614,43 @@ body {
   font-weight: 700;
 }
 
+.admin-story-button {
+  background: #405de6;
+}
+
+.admin-story-button:hover {
+  background: #5233c7;
+}
+
 .admin-delete-button {
   background: #e63946;
 }
 
 .admin-delete-button:hover {
   background: #c92c3b;
+}
+
+.admin-card-meta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.shared-badge {
+  display: inline-flex;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.shared-yes {
+  background: #e6fff2;
+  color: #116336;
+}
+
+.shared-no {
+  background: #f1f3f5;
+  color: #495057;
 }
 
 .error-box,

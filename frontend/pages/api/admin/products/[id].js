@@ -57,6 +57,7 @@ export default async function handler(req, res) {
         category,
         url_affiliate,
         search_query,
+        shared_instagram,
       } = req.body;
 
       const existing = await query('SELECT price, original_price FROM products WHERE id = $1', [id]);
@@ -83,6 +84,7 @@ export default async function handler(req, res) {
       if (category !== undefined) { updates.push('category = $' + (params.length + 1)); params.push(category); }
       if (url_affiliate !== undefined) { updates.push('url_affiliate = $' + (params.length + 1)); params.push(url_affiliate); }
       if (search_query !== undefined) { updates.push('search_query = $' + (params.length + 1)); params.push(search_query); }
+      if (shared_instagram !== undefined) { updates.push('shared_instagram = $' + (params.length + 1)); params.push(shared_instagram); }
 
       updates.push('discount = $' + (params.length + 1));
       params.push(discount);

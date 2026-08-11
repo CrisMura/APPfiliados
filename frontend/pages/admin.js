@@ -13,16 +13,17 @@ export default function Admin() {
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
+  const [storyPublishingId, setStoryPublishingId] = useState(null);
 
   const authHeader = password ? `Basic ${btoa(`:${password}`)}` : null;
 
-  const fetchPendingProducts = async () => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
       setAuthError(null);
       setMessage('');
 
-      const response = await axios.get(`${API_URL}/admin/products?pending=true&limit=200`, {
+      const response = await axios.get(`${API_URL}/admin/products?limit=200`, {
         headers: authHeader ? { Authorization: authHeader } : {}
       });
 
@@ -44,7 +45,7 @@ export default function Admin() {
       setAuthError('Debes ingresar la contraseña de admin.');
       return;
     }
-    await fetchPendingProducts();
+    await fetchProducts();
   };
 
   const handleAffiliateChange = (id, value) => {
@@ -65,19 +66,19 @@ export default function Admin() {
       setSavingId(product.id);
       setMessage('');
 
-      await axios.put(
+      const response = await axios.put(
         `${API_URL}/admin/products/${product.id}`,
         { url_affiliate: affiliateUrl.trim() },
         { headers: authHeader ? { Authorization: authHeader } : {} }
       );
 
-      setProducts((prev) => prev.filter((item) => item.id !== product.id));
+      setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, url_affiliate: response.data.url_affiliate } : item));
       setDrafts((prev) => {
         const next = { ...prev };
         delete next[product.id];
         return next;
       });
-      setMessage('URL de afiliado guardada correctamente. El producto ya está listo para publicación.');
+      setMessage('URL de afiliado guardada correctamente. El producto se mantiene en el listado.');
     } catch (err) {
       console.error('Error saving affiliate URL:', err);
       setMessage('Error al guardar la URL de afiliado. Revisa la contraseña y el backend.');
@@ -113,19 +114,71 @@ export default function Admin() {
     }
   };
 
-  const pendingProducts = products.filter(
+  const handlePublishInstagramStory = async (product) => {
+    setStoryPublishingId(product.id);
+    setMessage('');
+
+    const shareUrl = product.url_affiliate?.trim() || product.url;
+    const shareText = `Link de compra\n${shareUrl}`;
+    const shareData = {
+      title: 'Link de compra',
+      text: shareText,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        if (product.image && navigator.canShare) {
+          try {
+            const response = await fetch(product.image, { mode: 'cors' });
+            const blob = await response.blob();
+            const file = new File([blob], 'product-image.jpg', { type: blob.type || 'image/jpeg' });
+
+            if (navigator.canShare({ files: [file] })) {
+              shareData.files = [file];
+            }
+          } catch (imageError) {
+            console.warn('No se pudo cargar la imagen para compartir:', imageError);
+          }
+        }
+
+        await navigator.share(shareData);
+        await axios.put(
+          `${API_URL}/admin/products/${product.id}`,
+          { shared_instagram: true },
+          { headers: authHeader ? { Authorization: authHeader } : {} }
+        );
+        setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, shared_instagram: true } : item));
+        setMessage('Compartido en Instagram. El estado se actualizó correctamente.');
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareText);
+        setMessage('Texto copiado al portapapeles. Abre Instagram Stories y pega la descripción manualmente.');
+      } else {
+        window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
+        setMessage('Usa el texto copiado para publicar en Instagram Stories.');
+      }
+    } catch (error) {
+      console.error('Error al compartir en Instagram:', error);
+      setMessage('No fue posible abrir el diálogo de compartir. Intenta copiar y pegar manualmente.');
+    } finally {
+      setStoryPublishingId(null);
+    }
+  };
+
+  const pendingCount = products.filter(
     (product) => !product.url_affiliate || product.url_affiliate.trim() === ''
-  );
+  ).length;
 
   return (
     <Layout title="Admin - DealRadar">
       <section className="admin-header">
         <div className="container">
           <h1>Panel de Administración</h1>
-          <p>Revisa los productos pendientes y agrega la URL de afiliado antes de publicar.</p>
+          <p>Revisa los productos y administra sus enlaces de afiliado e historial de Instagram.</p>
 
           <div className="admin-summary">
-            <div>Total productos en espera: {pendingProducts.length}</div>
+            <div>Total productos: {products.length}</div>
+            <div>Productos sin URL de afiliado: {pendingCount}</div>
           </div>
         </div>
       </section>
@@ -155,16 +208,16 @@ export default function Admin() {
             {message && <div className="message-box">{message}</div>}
             {loading && <p>Cargando productos...</p>}
 
-            {!loading && pendingProducts.length === 0 && (
+            {!loading && products.length === 0 && (
               <div className="empty-state">
-                <h2>No hay productos pendientes</h2>
-                <p>Todos los productos tienen URL de afiliado y están listos para publicación.</p>
+                <h2>No hay productos</h2>
+                <p>No se encontraron productos en el listado administrativo.</p>
               </div>
             )}
 
-            {!loading && pendingProducts.length > 0 && (
+            {!loading && products.length > 0 && (
               <div className="admin-list">
-                {pendingProducts.map((product, index) => (
+                {products.map((product, index) => (
                   <div key={product.id} className="admin-card">
                     <div className="admin-card-header">
                       <div>
@@ -177,6 +230,11 @@ export default function Admin() {
                     </div>
 
                     <div className="admin-card-body">
+                      <div className="admin-card-meta">
+                        <span className={`shared-badge ${product.shared_instagram ? 'shared-yes' : 'shared-no'}`}>
+                          {product.shared_instagram ? 'Compartido en Instagram' : 'No compartido'}
+                        </span>
+                      </div>
                       <div className="admin-field admin-link-row">
                         <label>Enlace original</label>
                         <div className="admin-link-preview">
@@ -198,6 +256,14 @@ export default function Admin() {
                       </div>
 
                       <div className="admin-actions">
+                        <button
+                          type="button"
+                          className="admin-story-button"
+                          onClick={() => handlePublishInstagramStory(product)}
+                          disabled={storyPublishingId === product.id}
+                        >
+                          {storyPublishingId === product.id ? 'Compartiendo...' : 'Publicar historia de Instagram'}
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleSave(product)}

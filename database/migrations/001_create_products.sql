@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS products (
     image TEXT,
     url TEXT UNIQUE NOT NULL,
     url_affiliate TEXT,
+    shared_instagram BOOLEAN NOT NULL DEFAULT FALSE,
     store TEXT DEFAULT 'DealRadar',
     clicks INTEGER DEFAULT 0,
     category TEXT,
