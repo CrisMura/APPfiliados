@@ -80,6 +80,21 @@ body {
   font-size: 2rem;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.logo:hover {
+  opacity: 0.95;
+  text-decoration: none;
+}
+
 .nav-links {
   display: flex;
   gap: 1rem;
