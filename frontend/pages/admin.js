@@ -4,6 +4,63 @@ import Layout from '../components/Layout';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+
+
+
+
+export default function BotonInstagram({ urlACompartir = "" }) {
+  const [esMovil, setEsMovil] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+
+  // Detectar entorno móvil solo en el cliente (evita errores de SSR en Next.js)
+  useEffect(() => {
+    const checkMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    setEsMovil(checkMovil);
+  }, []);
+
+  const manejarCompartir = async () => {
+    if (!esMovil) {
+      alert("Esta función solo está disponible en dispositivos móviles con la app de Instagram.");
+      return;
+    }
+
+    // Paso 1: Copiar el enlace al portapapeles (para usar como Sticker en la Story)
+    if (urlACompartir) {
+      try {
+        await navigator.clipboard.writeText(urlACompartir);
+        setCopiado(true);
+        // Opcional: Volver a cambiar el estado del texto del botón tras unos segundos
+        setTimeout(() => setCopiado(false), 3000);
+      } catch (err) {
+        console.error("Error al copiar el enlace: ", err);
+      }
+    }
+
+    // Paso 2: Intentar abrir la cámara de Instagram Stories
+    const instagramUrl = "instagram://story-camera";
+    window.location.href = instagramUrl;
+
+    // Paso 3: Respaldo por si la app no está instalada
+    setTimeout(() => {
+      if (document.hidden) return; // Si la app se abrió con éxito, detenemos el script
+      
+      const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (esiOS) {
+        window.location.href = "https://apple.com";
+      } else {
+        window.location.href = "https://google.com";
+      }
+    }, 2500);
+  };
+
+
+
+
+
+
+
+
+
 export default function Admin() {
   const [products, setProducts] = useState([]);
   const [drafts, setDrafts] = useState({});
@@ -140,7 +197,7 @@ export default function Admin() {
     setStoryPublishingId(product.id);
     setMessage('');
 
-    const shareUrl = product.url_affiliate?.trim() || product.url;
+    const shareUrl = product.url_affiliate?.trim();
     const shareText = `Link de compra\n${shareUrl}`;
     const shareData = {
       title: 'Link de compra',
@@ -327,6 +384,21 @@ export default function Admin() {
                             </>
                           )}
                         </button>
+                            <button
+                              onClick={manejarCompartir}
+                              style={{
+                                padding: '12px 24px',
+                                backgroundColor: '#E1306C',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                              }}
+                            >
+                              {copiado ? "¡Enlace copiado! Abriendo Instagram..." : "Compartir en Instagram Stories"}
+                          </button>
                         <button
                           type="button"
                           onClick={() => handleSave(product)}
