@@ -4,63 +4,6 @@ import Layout from '../components/Layout';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-
-
-
-
-export default function BotonInstagram({ urlACompartir = "" }) {
-  const [esMovil, setEsMovil] = useState(false);
-  const [copiado, setCopiado] = useState(false);
-
-  // Detectar entorno móvil solo en el cliente (evita errores de SSR en Next.js)
-  useEffect(() => {
-    const checkMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    setEsMovil(checkMovil);
-  }, []);
-
-  const manejarCompartir = async () => {
-    if (!esMovil) {
-      alert("Esta función solo está disponible en dispositivos móviles con la app de Instagram.");
-      return;
-    }
-
-    // Paso 1: Copiar el enlace al portapapeles (para usar como Sticker en la Story)
-    if (urlACompartir) {
-      try {
-        await navigator.clipboard.writeText(urlACompartir);
-        setCopiado(true);
-        // Opcional: Volver a cambiar el estado del texto del botón tras unos segundos
-        setTimeout(() => setCopiado(false), 3000);
-      } catch (err) {
-        console.error("Error al copiar el enlace: ", err);
-      }
-    }
-
-    // Paso 2: Intentar abrir la cámara de Instagram Stories
-    const instagramUrl = "instagram://story-camera";
-    window.location.href = instagramUrl;
-
-    // Paso 3: Respaldo por si la app no está instalada
-    setTimeout(() => {
-      if (document.hidden) return; // Si la app se abrió con éxito, detenemos el script
-      
-      const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (esiOS) {
-        window.location.href = "https://apple.com";
-      } else {
-        window.location.href = "https://google.com";
-      }
-    }, 2500);
-  };
-
-}
-
-
-
-
-
-
-
 export default function Admin() {
   const [products, setProducts] = useState([]);
   const [drafts, setDrafts] = useState({});
@@ -193,56 +136,79 @@ export default function Admin() {
     }
   };
 
-  const handlePublishInstagramStory = async (product) => {
-    setStoryPublishingId(product.id);
-    setMessage('');
+const handlePublishInstagramStory = async (product) => {
+  setStoryPublishingId(product.id);
+  setMessage('');
 
-    const shareUrl = product.url_affiliate?.trim();
-    const shareText = `Link de compra\n${shareUrl}`;
-    const shareData = {
-      title: 'Link de compra',
-      text: shareText,
-      url: shareUrl,
-    };
+  const shareUrl = product.url_affiliate?.trim();
+  const shareText = `Link de compra\n${shareUrl}`;
 
-    try {
-      if (navigator.share) {
-        if (product.image && navigator.canShare) {
-          try {
-            const response = await fetch(product.image, { mode: 'cors' });
-            const blob = await response.blob();
-            const file = new File([blob], 'product-image.jpg', { type: blob.type || 'image/jpeg' });
+  // 1. Detectar si el usuario está en un dispositivo móvil
+  const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-            if (navigator.canShare({ files: [file] })) {
-              shareData.files = [file];
-            }
-          } catch (imageError) {
-            console.warn('No se pudo cargar la imagen para compartir:', imageError);
-          }
-        }
-
-        await navigator.share(shareData);
-        await axios.put(
-          `${API_URL}/admin/products/${product.id}`,
-          { shared_instagram: true },
-          { headers: authHeaders }
-        );
-        setProducts((prev) => prev.map((item) => item.id === product.id ? { ...item, shared_instagram: true } : item));
-        setMessage('Compartido en Instagram. El estado se actualizó correctamente.');
-      } else if (navigator.clipboard) {
+  try {
+    if (esMovil) {
+      // 2. Intentar copiar el texto/enlace al portapapeles de forma nativa
+      if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareText);
-        setMessage('Texto copiado al portapapeles. Abre Instagram Stories y pega la descripción manualmente.');
+        setMessage('¡Enlace copiado! Abriendo Instagram Stories para que lo pegues como Sticker...');
+      } else {
+        // Respaldo clásico de copia si clipboard falla en navegadores internos
+        const textArea = document.createElement("textarea");
+        textArea.value = shareText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      // 3. Forzar la actualización del estado en tu base de datos mediante Axios
+      await axios.put(
+        `${API_URL}/admin/products/${product.id}`,
+        { shared_instagram: true },
+        { headers: authHeaders }
+      );
+
+      // Actualizar el estado de la lista de productos local
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === product.id ? { ...item, shared_instagram: true } : item
+        )
+      );
+
+      // 4. Redirigir inmediatamente a la cámara de Instagram Stories (Deep Link)
+      window.location.href = "instagram://story-camera";
+
+      // 5. Plan de respaldo si la aplicación de Instagram no está instalada en el celular
+      setTimeout(() => {
+        if (document.hidden) return; // Si la app se abrió correctamente, la pestaña se oculta y no hace nada
+        
+        const esiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (esiOS) {
+          window.location.href = "https://apple.com";
+        } else {
+          window.location.href = "https://google.com";
+        }
+      }, 2500);
+
+    } else {
+      // Flujo de respaldo para Computadoras de escritorio (Desktop)
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareText);
+        setMessage('Texto copiado al portapapeles. Abre Instagram desde tu móvil para publicar la historia.');
       } else {
         window.prompt('Copia este texto para publicar en Instagram Stories:', shareText);
         setMessage('Usa el texto copiado para publicar en Instagram Stories.');
       }
-    } catch (error) {
-      console.error('Error al compartir en Instagram:', error);
-      setMessage('No fue posible abrir el diálogo de compartir. Intenta copiar y pegar manualmente.');
-    } finally {
-      setStoryPublishingId(null);
     }
-  };
+  } catch (error) {
+    console.error('Error al procesar la publicación en Instagram:', error);
+    setMessage('No fue posible automatizar la acción. Intenta copiar el enlace manualmente.');
+  } finally {
+    setStoryPublishingId(null);
+  }
+};
+
 
   const pendingCount = products.filter(
     (product) => !product.url_affiliate || product.url_affiliate.trim() === ''
@@ -384,24 +350,6 @@ export default function Admin() {
                             </>
                           )}
                         </button>
-
-
-
-
-
-                            <button
-                              type="button"
-                              onClick={manejarCompartir}                              
-                            >
-                              {copiado ? "¡Enlace copiado! Abriendo Instagram..." : "Compartir en Instagram Stories"}
-                          </button>
-
-
-
-
-
-
-
                         <button
                           type="button"
                           onClick={() => handleSave(product)}
