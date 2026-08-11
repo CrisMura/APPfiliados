@@ -145,6 +145,7 @@ export default function Admin() {
     const shareData = {
       title: 'Link de compra',
       text: shareText,
+      url: shareUrl
     };
 
     try {
@@ -164,10 +165,6 @@ export default function Admin() {
           } catch (imageError) {
             console.warn('No se pudo cargar la imagen para compartir:', imageError);
           }
-        }
-
-        if (!sharedFile && shareUrl) {
-          shareData.url = shareUrl;
         }
 
         await navigator.share(shareData);
