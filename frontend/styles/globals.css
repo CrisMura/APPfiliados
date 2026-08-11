@@ -40,11 +40,13 @@ body {
   z-index: 100;
   box-shadow: var(--shadow);
 }
-
 .header-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 .header-logout-button,
 .admin-logout-button {
@@ -642,7 +644,9 @@ body {
 }
 
 .header-actions {
-  margin-left: 1rem;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .header-logout-button,
