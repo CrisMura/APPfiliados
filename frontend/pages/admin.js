@@ -284,7 +284,7 @@ export default function Admin() {
                           type="text"
                           value={drafts[product.id] !== undefined ? drafts[product.id] : product.url_affiliate || ''}
                           onChange={(e) => handleAffiliateChange(product.id, e.target.value)}
-                          placeholder="https://www.mercadolibre.cl/..."
+                          placeholder=""
                         />
                       </div>
 
