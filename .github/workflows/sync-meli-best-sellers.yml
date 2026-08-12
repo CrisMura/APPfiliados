@@ -55,3 +55,26 @@ jobs:
           path: backend/meli-diagnostic.html
           if-no-files-found: ignore
           retention-days: 3
+
+  notify:
+    if: always()
+    needs: sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar correo de resumen
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          secure: true
+          subject: "GitHub Actions - Sincronización Meli #${{ github.run_number }} - ${{ needs.sync.result }}"
+          body: |
+            Workflow: ${{ github.workflow }}
+            Job: sync
+            Resultado: ${{ needs.sync.result }}
+            Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Commit: ${{ github.sha }}
+          to: ${{ secrets.NOTIFICATION_EMAIL_TO }}
+          from: ${{ secrets.NOTIFICATION_EMAIL_FROM }}
