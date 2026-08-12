@@ -23,6 +23,8 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    outputs:
+      updated: ${{ steps.sync_products.outputs.updated }}
 
     steps:
       - name: Descargar repositorio
@@ -39,13 +41,34 @@ jobs:
         run: npm ci
 
       - name: Sincronizar productos
+        id: sync_products
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SCRAPEDO_TOKEN: ${{ secrets.SCRAPEDO_TOKEN }}
           MELI_BEST_SELLERS_LIMIT: '15'
           MELI_SYNC_ON_START: 'false'
           MELI_DIAGNOSTIC_FILE: 'meli-diagnostic.html'
-        run: npm run sync:meli
+        run: |
+          set -e
+          npm run sync:meli > sync-output.log 2>&1 || true
+          cat sync-output.log
+          node <<'NODE'
+          const fs = require('fs');
+          const output = fs.readFileSync('sync-output.log', 'utf8');
+          const match = output.match(/\{[\s\S]*\}/);
+          let updated = 0;
+          if (match) {
+            try {
+              const data = JSON.parse(match[0]);
+              if (data.updated !== undefined) {
+                updated = data.updated;
+              }
+            } catch (e) {
+              // ignore parse errors
+            }
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated=${updated}\n`);
+          NODE
 
       - name: Guardar diagnóstico de Meli
         if: failure()
@@ -74,6 +97,7 @@ jobs:
             Workflow: ${{ github.workflow }}
             Job: sync
             Resultado: ${{ needs.sync.result }}
+            Productos actualizados: ${{ needs.sync.outputs.updated }}
             Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Commit: ${{ github.sha }}
           to: ${{ secrets.NOTIFICATION_EMAIL_TO }}
