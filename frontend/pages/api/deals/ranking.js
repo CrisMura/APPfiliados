@@ -12,8 +12,8 @@ export default async function handler(req, res) {
       SELECT *,
         (discount * 100 + clicks) as score
       FROM products
-      WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''
-      ORDER BY best_seller_rank ASC NULLS LAST
+      WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''
+      ORDER BY is_best_seller DESC, best_seller_rank ASC NULLS LAST, score DESC NULLS LAST, last_seen_at DESC NULLS LAST, created_at DESC
       LIMIT $1
     `;
 

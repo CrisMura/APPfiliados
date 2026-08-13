@@ -40,6 +40,18 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const formatRankingStats = (product) => {
+    const discount = Number(product.discount || 0);
+    const parts = [];
+
+    if (discount > 0) {
+      parts.push(`${Math.round(discount * 100)}% OFF`);
+    }
+
+    parts.push(`${product.clicks || 0} clics`);
+    return parts.join(' • ');
+  };
+
   return (
     <Layout title="DealRadar - Las mejores ofertas">
       {/* Hero Section */}
@@ -77,7 +89,7 @@ export default function Home() {
               {ranking.map((product, index) => (
                 <a 
                   key={product.id}
-                  href={`/api/go/${product.id}`}
+                  href={`${API_URL}/go/${product.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ranking-card"
@@ -90,13 +102,13 @@ export default function Home() {
                   />
                   <div className="ranking-info">
                     <div className="ranking-title">{product.title}</div>
-                    <div className="ranking-stats">
-                      {Math.round(product.discount * 100)}% OFF • {product.clicks} clics
+                    <div className="ranking-stats">{formatRankingStats(product)}</div>
+                  </div>
+                  {Number(product.discount || 0) > 0 && (
+                    <div className="ranking-discount">
+                      {Math.round(Number(product.discount) * 100)}%
                     </div>
-                  </div>
-                  <div className="ranking-discount">
-                    {Math.round(product.discount * 100)}%
-                  </div>
+                  )}
                 </a>
               ))}
             </div>

@@ -27,12 +27,15 @@ const requireAdminAuth = (req, res, next) => {
   next();
 };
 
+const publicProductsWhere = "url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''";
+const publicProductsOrder = 'is_best_seller DESC, best_seller_rank ASC NULLS LAST, last_seen_at DESC NULLS LAST, created_at DESC';
+
 // GET /api/deals - Devuelve todas las ofertas publicadas (solo con url_affiliate)
 router.get('/deals', async (req, res) => {
   try {
     const { category, limit = 50 } = req.query;
     
-    let sql = "SELECT * FROM products WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''";
+    let sql = `SELECT * FROM products WHERE ${publicProductsWhere}`;
     const params = [];
     
     if (category) {
@@ -40,7 +43,7 @@ router.get('/deals', async (req, res) => {
       params.push(`%${category.toLowerCase()}%`);
     }
     
-    sql += ' ORDER BY best_seller_rank ASC NULLS LAST LIMIT $' + (params.length + 1);
+    sql += ` ORDER BY ${publicProductsOrder} LIMIT $` + (params.length + 1);
     params.push(parseInt(limit));
     
     const result = await query(sql, params);
@@ -206,7 +209,8 @@ router.get('/deals/ranking', async (req, res) => {
       SELECT *, 
         (discount * 100 + clicks) as score 
       FROM products 
-      ORDER BY score DESC 
+      WHERE ${publicProductsWhere}
+      ORDER BY is_best_seller DESC, best_seller_rank ASC NULLS LAST, score DESC NULLS LAST, last_seen_at DESC NULLS LAST, created_at DESC
       LIMIT $1
     `;
     
@@ -223,7 +227,7 @@ router.get('/deals/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query(
-      "SELECT * FROM products WHERE id = $1 AND is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''",
+      `SELECT * FROM products WHERE id = $1 AND ${publicProductsWhere}`,
       [id]
     );
     
@@ -260,9 +264,9 @@ router.get('/go/:id', async (req, res) => {
 // GET /api/stats - Estadísticas del sistema
 router.get('/stats', async (req, res) => {
   try {
-    const totalProducts = await query('SELECT COUNT(*) as total FROM products');
-    const avgDiscount = await query('SELECT AVG(discount * 100) as avg_discount FROM products');
-    const totalClicks = await query('SELECT SUM(clicks) as total_clicks FROM products');
+    const totalProducts = await query(`SELECT COUNT(*) as total FROM products WHERE ${publicProductsWhere}`);
+    const avgDiscount = await query(`SELECT AVG(discount * 100) as avg_discount FROM products WHERE ${publicProductsWhere}`);
+    const totalClicks = await query(`SELECT SUM(clicks) as total_clicks FROM products WHERE ${publicProductsWhere}`);
     
     res.json({
       totalProducts: parseInt(totalProducts.rows[0].total),

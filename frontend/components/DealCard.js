@@ -1,20 +1,20 @@
-import Link from 'next/link';
-import Image from 'next/image';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 const DealCard = ({ product, showBestBadge = false }) => {
-  const discountPercent = Math.round(product.discount * 100);
+  const discount = Number(product.discount || 0);
+  const hasDiscount = discount > 0;
+  const discountPercent = Math.round(discount * 100);
   const formattedPrice = new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
   }).format(product.price);
 
-  const formattedOriginalPrice = new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-  }).format(product.original_price);
-
-  // Calculate score for ranking
-  const score = Math.round(product.discount * 100 + (product.clicks || 0));
+  const formattedOriginalPrice = product.original_price
+    ? new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+      }).format(product.original_price)
+    : null;
 
   return (
     <div className="deal-card">
@@ -25,19 +25,23 @@ const DealCard = ({ product, showBestBadge = false }) => {
           className="deal-image"
           loading="lazy"
         />
-        <div className={`discount-badge ${showBestBadge ? 'best' : ''}`}>
-          {discountPercent}% OFF
-        </div>
+        {hasDiscount && (
+          <div className={`discount-badge ${showBestBadge ? 'best' : ''}`}>
+            {discountPercent}% OFF
+          </div>
+        )}
       </div>
       <div className="deal-content">
         <h3 className="deal-title">{product.title}</h3>
         <div className="deal-prices">
-          <span className="original-price">{formattedOriginalPrice}</span>
+          {formattedOriginalPrice && (
+            <span className="original-price">{formattedOriginalPrice}</span>
+          )}
           <span className="current-price">{formattedPrice}</span>
         </div>
-        <Link href={`/api/go/${product.id}`} className="deal-button" target="_blank" rel="noopener noreferrer">
+        <a href={`${API_URL}/go/${product.id}`} className="deal-button" target="_blank" rel="noopener noreferrer">
           Ver oferta
-        </Link>
+        </a>
       </div>
     </div>
   );

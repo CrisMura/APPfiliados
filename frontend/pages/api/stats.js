@@ -7,13 +7,13 @@ export default async function handler(req, res) {
 
   try {
     const totalProducts = await query(
-      "SELECT COUNT(*) as total FROM products WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
+      "SELECT COUNT(*) as total FROM products WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
     );
     const avgDiscount = await query(
-      "SELECT AVG(discount * 100) as avg_discount FROM products WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
+      "SELECT AVG(discount * 100) as avg_discount FROM products WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
     );
     const totalClicks = await query(
-      "SELECT SUM(clicks) as total_clicks FROM products WHERE is_best_seller = TRUE AND url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
+      "SELECT SUM(clicks) as total_clicks FROM products WHERE url_affiliate IS NOT NULL AND TRIM(url_affiliate) <> ''"
     );
 
     res.status(200).json({
