@@ -7,7 +7,7 @@ const nextConfig = {
   },
   // Configuración de SEO
   meta: {
-    title: 'DealRadar - Las mejores ofertas',
+    title: 'RadarOfertas - Las mejores ofertas',
     description: 'Descubre los mejores descuentos en tecnología, hogar, herramientas y más. Ofertas cargadas manualmente.',
   },
 };

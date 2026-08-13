@@ -204,7 +204,7 @@ export default function Admin() {
 
   return (
     <Layout
-      title="Admin - DealRadar"
+      title="Admin - RadarOfertas"
       navActions={loggedIn ? (
         <button type="button" className="header-logout-button" onClick={handleLogout}>
           Cerrar sesión

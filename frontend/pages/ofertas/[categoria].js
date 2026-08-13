@@ -8,31 +8,31 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 // Mapeo de categorías para SEO
 const categoryMeta = {
   tecnologia: {
-    title: 'Ofertas de Tecnología - DealRadar',
+    title: 'Ofertas de Tecnología - RadarOfertas',
     description: 'Los mejores descuentos en tecnología: celulares, notebooks, tablets, audifonos y más.',
     headerTitle: '💻 Ofertas de Tecnología',
     headerSubtitle: 'Los mejores descuentos en tecnología'
   },
   hogar: {
-    title: 'Ofertas de Hogar - DealRadar',
+    title: 'Ofertas de Hogar - RadarOfertas',
     description: 'Encuentra las mejores ofertas para tu hogar: muebles, decoracion, electrodomesticos y mas.',
     headerTitle: '🏠 Ofertas de Hogar',
     headerSubtitle: 'Los mejores descuentos para tu hogar'
   },
   herramientas: {
-    title: 'Ofertas de Herramientas - DealRadar',
+    title: 'Ofertas de Herramientas - RadarOfertas',
     description: 'Ofertas en herramientas electricas, manuales y accesorios para tu taller.',
     headerTitle: '🔧 Ofertas de Herramientas',
     headerSubtitle: 'Los mejores descuentos en herramientas'
   },
   deportes: {
-    title: 'Ofertas de Deportes - DealRadar',
+    title: 'Ofertas de Deportes - RadarOfertas',
     description: 'Ofertas en articulos deportivos, fitness, bicieltas y mas.',
     headerTitle: '⚽ Ofertas de Deportes',
     headerSubtitle: 'Los mejores descuentos en deportes'
   },
   electrodomesticos: {
-    title: 'Ofertas de Electrodomesticos - DealRadar',
+    title: 'Ofertas de Electrodomesticos - RadarOfertas',
     description: 'Ofertas en electrodomesticos para tu hogar: refrigeradores, lavadoras, cocinas y mas.',
     headerTitle: '🔌 Ofertas de Electrodomesticos',
     headerSubtitle: 'Los mejores descuentos en electrodomesticos'
@@ -45,7 +45,7 @@ export default function Categoria({ categoria }) {
   const [error, setError] = useState(null);
 
   const meta = categoryMeta[categoria] || {
-    title: `Ofertas de ${categoria} - DealRadar`,
+    title: `Ofertas de ${categoria} - RadarOfertas`,
     description: `Los mejores descuentos en ${categoria}`,
     headerTitle: `🔥 Ofertas de ${categoria}`,
     headerSubtitle: `Los mejores descuentos en ${categoria}`

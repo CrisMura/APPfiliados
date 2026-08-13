@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 
-const Layout = ({ children, title = 'DealRadar - Las mejores ofertas', navActions = null }) => {
+const Layout = ({ children, title = 'RadarOfertas - Las mejores ofertas', navActions = null }) => {
   return (
     <>
       <Head>
@@ -19,7 +19,7 @@ const Layout = ({ children, title = 'DealRadar - Las mejores ofertas', navAction
         <div className="header-content">
           <Link href="/" className="logo">
             <span className="logo-icon">📡</span>
-            <span>DealRadar</span>
+            <span>RadarOfertas</span>
           </Link>
           <nav className="nav-links">
             <Link href="/" className="nav-link">Inicio</Link>
@@ -36,7 +36,7 @@ const Layout = ({ children, title = 'DealRadar - Las mejores ofertas', navAction
 
       <footer className="footer">
         <div className="footer-content">
-          <div className="footer-logo">📡 DealRadar</div>
+          <div className="footer-logo">📡 RadarOfertas</div>
           <div className="footer-links">
             <Link href="/" className="footer-link">Inicio</Link>
             <Link href="/ofertas" className="footer-link">Todas las ofertas</Link>
@@ -45,7 +45,7 @@ const Layout = ({ children, title = 'DealRadar - Las mejores ofertas', navAction
             <Link href="/ofertas/herramientas" className="footer-link">Herramientas</Link>
           </div>
           <p className="footer-copyright">
-            © {new Date().getFullYear()} DealRadar. Las mejores ofertas cargadas manualmente.
+            © {new Date().getFullYear()} RadarOfertas. Las mejores ofertas cargadas manualmente.
           </p>
         </div>
       </footer>

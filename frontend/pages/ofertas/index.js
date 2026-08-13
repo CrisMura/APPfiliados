@@ -27,7 +27,7 @@ export default function Ofertas() {
     fetchData();
   }, []);
 
-  const pageTitle = 'Todas las ofertas - DealRadar';
+  const pageTitle = 'Todas las ofertas - RadarOfertas';
   const pageDescription = 'Ver todas las ofertas cargadas manualmente. Tecnología, hogar, herramientas y más.';
 
   return (

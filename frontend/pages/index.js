@@ -53,11 +53,11 @@ export default function Home() {
   };
 
   return (
-    <Layout title="DealRadar - Las mejores ofertas">
+    <Layout title="RadarOfertas - Las mejores ofertas">
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h1>📡 DealRadar</h1>
+          <h1>📡 RadarOfertas</h1>
           <p>Descubre las mejores ofertas cargadas manualmente y visualízalas desde el panel.</p>
           
           <div className="stats-bar">
